@@ -269,7 +269,6 @@ class _SplashScreenState
                     AppAssets.logo,
                     height: 65,
                     width: 65,
-                    color: const Color(0xFF2E75B6),
                   ),
                   // Icon(
                   //   Icons.icecream,

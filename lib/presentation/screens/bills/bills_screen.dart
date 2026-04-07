@@ -728,6 +728,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
     final bills = billState.bills;
     final user = ref.watch(authProvider).user;
     final isAdmin = user?.isAdmin ?? false;
+    final isUser = user?.isUser ?? false;
     final primary = ref.watch(themeProvider).primaryColor;
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width >= AppConstants.desktopBreakpoint;
@@ -758,7 +759,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
               controller: _tabController,
               children: [
                 // Tab 1: Generate Bill
-                isAdmin
+                isAdmin || isUser
                     ? SingleChildScrollView(
                         padding: EdgeInsets.all(isDesktop ? 32 : 16),
                         child: Column(
@@ -912,7 +913,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
                     : Center(child: Text('Only admin can generate bills', style: GoogleFonts.poppins(color: Colors.grey[500]))),
 
                 // Tab 2: Cash Payment
-                isAdmin
+                isAdmin || isUser
                     ? _buildCashPaymentTab(isDesktop, primary)
                     : Center(child: Text('Only admin can record payments', style: GoogleFonts.poppins(color: Colors.grey[500]))),
 

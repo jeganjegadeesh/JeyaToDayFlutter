@@ -9,6 +9,9 @@ import '../../../data/providers/theme_provider.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/dashboard/dashboard_screen.dart';
 import '../../screens/products/products_screen.dart';
+import '../../screens/retailers/retailer_bills_history_screen.dart';
+import '../../screens/retailers/retailer_returns_history_screen.dart';
+import '../../screens/retailers/retailer_stock_history_screen.dart';
 import '../../screens/retailers/retailers_screen.dart';
 import '../../screens/stock/stock_screen.dart';
 import '../../screens/returns/returns_screen.dart';
@@ -60,25 +63,10 @@ class AppSidebar extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 40,
+                Image.asset(
+                  AppAssets.logo,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.circular(10),
-                  ),
-                  child: Image.asset(
-                    AppAssets.logo,
-                    height: 25,
-                    width: 25,
-                    color: const Color(0xFF2E75B6),
-                  ),
-                  // Icon(
-                  //   Icons.icecream,
-                  //   color: primary,
-                  //   size: 24,
-                  // ),
+                  width: 40,
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -120,7 +108,7 @@ class AppSidebar extends ConsumerWidget {
                   isActive: isActive,
                   primary: primary,
                   onTap: () =>
-                      _navigate(context, item.index),
+                      _navigate(context, item.index,isAdmin, isUser),
                 );
               }).toList(),
             ),
@@ -137,7 +125,7 @@ class AppSidebar extends ConsumerWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => _navigate(context, 7),
+                  onTap: () => _navigate(context, 7,isAdmin, isUser),
                   child: CircleAvatar(
                     radius: 18,
                     backgroundColor:
@@ -157,7 +145,7 @@ class AppSidebar extends ConsumerWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () =>
-                        _navigate(context, 7),
+                        _navigate(context, 7,isAdmin, isUser),
                     child: Column(
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
@@ -233,7 +221,7 @@ class AppSidebar extends ConsumerWidget {
       _MenuItem(l10n.returns, Icons.assignment_return_outlined, 4),
       _MenuItem(l10n.bills, Icons.receipt_long_outlined, 5),
       _MenuItem(l10n.reports, Icons.bar_chart_outlined, 6),
-      _MenuItem(l10n.users, Icons.manage_accounts_outlined, 9),
+      if(isAdmin) _MenuItem(l10n.users, Icons.manage_accounts_outlined, 9),
       _MenuItem(l10n.settings, Icons.settings_outlined, 8),
     ];
   } else {
@@ -292,7 +280,7 @@ class AppSidebar extends ConsumerWidget {
     );
   }
 
-  void _navigate(BuildContext context, int index) {
+  void _navigate(BuildContext context, int index, bool isAdmin, bool isUser) {
     Widget screen;
     switch (index) {
       case 0:
@@ -305,13 +293,25 @@ class AppSidebar extends ConsumerWidget {
         screen = const RetailersScreen();
         break;
       case 3:
-        screen = const StockScreen();
+        if(!isAdmin && !isUser) { 
+          screen = const RetailerStockHistoryScreen();        
+        } else {
+          screen = const StockScreen();
+        }
         break;
       case 4:
-        screen = const ReturnsScreen();
+        if(!isAdmin && !isUser) { 
+          screen = const RetailerReturnsHistoryScreen();        
+        } else {
+          screen = const ReturnsScreen();
+        }
         break;
       case 5:
-        screen = const BillsScreen();
+        if(!isAdmin && !isUser) { 
+          screen = const RetailerBillsHistoryScreen();        
+        } else {
+          screen = const BillsScreen();
+        }
         break;
       case 6:
         screen = const ReportsScreen();

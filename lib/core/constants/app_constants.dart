@@ -1,7 +1,6 @@
 class AppConstants {
   // API
-  static const String baseUrl =
-      'https://jeganjegadeesh.in/JeyaToDayBackEnd/api';
+  static const String baseUrl = 'https://jeganjegadeesh.in/JeyaToDayBackEnd/api';
 
   // Storage Keys
   static const String tokenKey = 'auth_token';
@@ -10,6 +9,7 @@ class AppConstants {
 
   // Roles
   static const String roleAdmin = 'admin';
+  static const String roleUser = 'user';
   static const String roleRetailer = 'retailer';
 
   // Responsive Breakpoints

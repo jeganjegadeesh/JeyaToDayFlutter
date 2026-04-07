@@ -65,6 +65,7 @@ class ApiClient {
     try {
       print("PATH :: $path");
       print("data :: $data");
+      print("BASE :: ${_dio.options.baseUrl}");
       return await _dio.post(path, data: data);
     } on DioException catch (e) {
       print(e);

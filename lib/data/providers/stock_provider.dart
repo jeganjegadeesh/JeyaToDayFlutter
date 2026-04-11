@@ -51,6 +51,8 @@ class StockNotifier extends StateNotifier<StockState> {
 
   StockNotifier(this._apiClient) : super(StockState());
 
+  final AuthState userState = AuthState();
+
   // Fetch stock history
   Future<void> fetchHistory({
     int? retailerId,
@@ -66,11 +68,16 @@ class StockNotifier extends StateNotifier<StockState> {
       if (fromDate != null) params['from_date'] = fromDate;
       if (toDate != null) params['to_date'] = toDate;
 
-      final response = await _apiClient.get('/stock/history', queryParameters: params);
+      var url = userState.user?.role == 'retailer' ? '/retailer/stock' : '/stock/history';
+
+      final response = await _apiClient.get(url, queryParameters: params);
+      print('History response:$response');
+
       final data = response.data['entries'] as List;
       final entries = data.map((e) => StockEntryModel.fromJson(e)).toList();
       state = state.copyWith(entries: entries, isLoading: false);
     } catch (e) {
+      print(e);
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

@@ -52,6 +52,7 @@ class ReturnNotifier extends StateNotifier<ReturnState> {
   final ApiClient _apiClient;
 
   ReturnNotifier(this._apiClient) : super(ReturnState());
+  final AuthState userState = AuthState();
 
   // Fetch return history
   Future<void> fetchHistory({
@@ -67,8 +68,9 @@ class ReturnNotifier extends StateNotifier<ReturnState> {
       if (date != null) params['date'] = date;
       if (fromDate != null) params['from_date'] = fromDate;
       if (toDate != null) params['to_date'] = toDate;
+      var url = userState.user?.role == 'retailer' ? '/retailer/returns' : '/returns';
 
-      final response = await _apiClient.get('/returns', queryParameters: params);
+      final response = await _apiClient.get(url, queryParameters: params);
       final data = response.data['returns'] as List;
       final returns = data.map((e) => StockEntryModel.fromJson(e)).toList();
       state = state.copyWith(returns: returns, isLoading: false);

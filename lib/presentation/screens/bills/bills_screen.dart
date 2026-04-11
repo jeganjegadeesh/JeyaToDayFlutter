@@ -350,20 +350,20 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
                 const SizedBox(height: 16),
 
                 // Stock Given
-                _sectionTitle(Icons.local_shipping, 'Total Stock Given', const Color(0xFFE67E22)),
-                const SizedBox(height: 8),
-                stockEntries.isEmpty
-                    ? _emptyBox('No stock entries found')
-                    : _buildAccumulatedStockTable(stockEntries, const Color(0xFFE67E22), isTamil),
-                const SizedBox(height: 16),
+                // _sectionTitle(Icons.local_shipping, 'Total Stock Given', const Color(0xFFE67E22)),
+                // const SizedBox(height: 8),
+                // stockEntries.isEmpty
+                //     ? _emptyBox('No stock entries found')
+                //     : _buildAccumulatedStockTable(stockEntries, const Color(0xFFE67E22), isTamil),
+                // const SizedBox(height: 16),
 
-                // Returns
-                _sectionTitle(Icons.assignment_return, 'Total Stock Returned', const Color(0xFFE74C3C)),
-                const SizedBox(height: 8),
-                returnEntries.isEmpty
-                    ? _emptyBox('No returns recorded')
-                    : _buildAccumulatedReturnTable(returnEntries, const Color(0xFFE74C3C), isTamil),
-                const SizedBox(height: 16),
+                // // Returns
+                // _sectionTitle(Icons.assignment_return, 'Total Stock Returned', const Color(0xFFE74C3C)),
+                // const SizedBox(height: 8),
+                // returnEntries.isEmpty
+                //     ? _emptyBox('No returns recorded')
+                //     : _buildAccumulatedReturnTable(returnEntries, const Color(0xFFE74C3C), isTamil),
+                // const SizedBox(height: 16),
 
                 // Bill Items
                 _sectionTitle(Icons.receipt_long, 'Bill Calculation', const Color(0xFF8E44AD)),
@@ -502,9 +502,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
           stockMap[pid]!['qty'] += item.quantity;
         } else {
           stockMap[pid] = {
-            'name': isTamil && (item.product?.tamilName ?? '').isNotEmpty
-                ? item.product!.tamilName!
-                : item.product?.name ?? 'Product',
+            'name': item.product?.name ?? 'Product',
             'qty': item.quantity,
           };
         }
@@ -522,9 +520,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
           returnMap[pid]!['qty'] += item.quantity;
         } else {
           returnMap[pid] = {
-            'name': isTamil && (item.product?.tamilName ?? '').isNotEmpty
-                ? item.product!.tamilName!
-                : item.product?.name ?? 'Product',
+            'name': item.product?.name ?? 'Product',
             'qty': item.quantity,
           };
         }
@@ -561,9 +557,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
           ...bill.items.asMap().entries.map((e) {
             final i = e.key;
             final item = e.value;
-            final productName = isTamil && (item.product?.tamilName ?? '').isNotEmpty
-                ? item.product!.tamilName!
-                : item.product?.name ?? '';
+            final productName = item.product?.name ?? '';
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               color: i % 2 == 0 ? Colors.white : const Color(0xFFF8FAFF),
@@ -914,7 +908,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
 
                 // Tab 2: Cash Payment
                 isAdmin || isUser
-                    ? _buildCashPaymentTab(isDesktop, primary)
+                    ? _buildCashPaymentTab(isDesktop, primary,isAdmin)
                     : Center(child: Text('Only admin can record payments', style: GoogleFonts.poppins(color: Colors.grey[500]))),
 
                 // Tab 3: Bill History
@@ -1021,7 +1015,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
     );
   }
 
-  Widget _buildCashPaymentTab(bool isDesktop, Color primary) {
+  Widget _buildCashPaymentTab(bool isDesktop, Color primary, bool isAdmin) {
     final cashState = ref.watch(cashPaymentProvider);
 
     return Column(
@@ -1143,6 +1137,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen>
                               ),
                               Text('₹${p.amount.toStringAsFixed(2)}',
                                   style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF27AE60))),
+                              if(isAdmin)
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
                                 onPressed: () async {

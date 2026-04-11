@@ -32,6 +32,8 @@ class _State extends ConsumerState<RetailerStockHistoryScreen> {
     // Retailer: GET /retailer/stock  (same StockController.history, auth gives retailer_id)
     // The existing history endpoint already filters by auth when role=retailer,
     // but we pass retailer_id explicitly so admin can also use this screen safely.
+
+    print('Fetching stock history with from: $_from, to: $_to for retailer_id: ${user?.id}');
     await ref.read(stockProvider.notifier).fetchHistory(
           retailerId: user?.id,
           fromDate: _from != null ? DateFormat('yyyy-MM-dd').format(_from!) : null,

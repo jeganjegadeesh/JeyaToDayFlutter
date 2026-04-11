@@ -46,9 +46,6 @@ class _ProductsScreenState
                 p.name
                     .toLowerCase()
                     .contains(query.toLowerCase()) ||
-                (p.tamilName ?? '')
-                    .toLowerCase()
-                    .contains(query.toLowerCase()) ||
                 (p.category ?? '')
                     .toLowerCase()
                     .contains(query.toLowerCase()))
@@ -64,8 +61,6 @@ class _ProductsScreenState
     final l10n = AppLocalizations.of(context)!;
     final nameController =
         TextEditingController(text: product?.name ?? '');
-    final tamilNameController = TextEditingController(
-        text: product?.tamilName ?? '');
     final priceController = TextEditingController(
         text: product?.price.toString() ?? '');
     final categoryController = TextEditingController(
@@ -104,19 +99,6 @@ class _ProductsScreenState
                       v == null || v.isEmpty
                           ? 'Name is required'
                           : null,
-                ),
-                const SizedBox(height: 12),
-
-                // Tamil Name
-                TextFormField(
-                  controller: tamilNameController,
-                  decoration: InputDecoration(
-                    labelText: l10n.tamilName,
-                    hintText: 'e.g. வெண்ணிலா ஐஸ்கிரீம்',
-                    border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(10)),
-                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -167,8 +149,6 @@ class _ProductsScreenState
                     .read(productProvider.notifier)
                     .createProduct(
                       name: nameController.text.trim(),
-                      tamilName: tamilNameController.text
-                          .trim(),
                       price: double.parse(
                           priceController.text.trim()),
                       category:
@@ -180,8 +160,6 @@ class _ProductsScreenState
                     .updateProduct(
                       id: product.id,
                       name: nameController.text.trim(),
-                      tamilName: tamilNameController.text
-                          .trim(),
                       price: double.parse(
                           priceController.text.trim()),
                       category:
@@ -347,8 +325,6 @@ class _ProductsScreenState
                 children: [
                   _tableHeader(l10n.productName,
                       flex: 3),
-                  _tableHeader(l10n.tamilName,
-                      flex: 2),
                   _tableHeader(l10n.category,
                       flex: 2),
                   _tableHeader(l10n.price, flex: 1),
@@ -362,11 +338,7 @@ class _ProductsScreenState
                 itemCount: products.length,
                 itemBuilder: (ctx, i) {
                   final p = products[i];
-                  final displayName = isTamil &&
-                          p.tamilName != null &&
-                          p.tamilName!.isNotEmpty
-                      ? p.tamilName!
-                      : p.name;
+                  final displayName = p.name;
                   return Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 14),
@@ -386,15 +358,7 @@ class _ProductsScreenState
                               style: GoogleFonts.poppins(
                                   fontSize: 14)),
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                              p.tamilName ?? '-',
-                              style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color:
-                                      Colors.grey[600])),
-                        ),
+                        
                         Expanded(
                           flex: 2,
                           child: Container(
@@ -477,11 +441,7 @@ class _ProductsScreenState
       itemCount: products.length,
       itemBuilder: (ctx, i) {
         final p = products[i];
-        final displayName = isTamil &&
-                p.tamilName != null &&
-                p.tamilName!.isNotEmpty
-            ? p.tamilName!
-            : p.name;
+        final displayName =  p.name;
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(16),
@@ -518,12 +478,6 @@ class _ProductsScreenState
                             fontSize: 14)),
                     if (isTamil && p.name.isNotEmpty)
                       Text(p.name,
-                          style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              color: Colors.grey[500]))
-                    else if (p.tamilName != null &&
-                        p.tamilName!.isNotEmpty)
-                      Text(p.tamilName!,
                           style: GoogleFonts.poppins(
                               fontSize: 11,
                               color: Colors.grey[500])),

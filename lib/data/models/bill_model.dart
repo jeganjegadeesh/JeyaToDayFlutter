@@ -95,7 +95,6 @@ class BillItemModel {
           ? ProductModel(
               id: json['product']['id'] ?? 0,
               name: json['product']['name'] ?? '',
-              tamilName: json['product']['tamil_name'],
               price: double.tryParse(json['product']['price'].toString()) ?? 0.0,
               category: json['product']['category'],
             )

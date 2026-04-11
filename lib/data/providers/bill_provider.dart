@@ -40,6 +40,9 @@ class BillNotifier extends StateNotifier<BillState> {
 
   BillNotifier(this._apiClient) : super(BillState());
 
+  final AuthState userState = AuthState();
+
+
   Future<bool> generateBill({
     required int retailerId,
     required String fromDate,
@@ -79,8 +82,9 @@ class BillNotifier extends StateNotifier<BillState> {
       if (retailerId != null) params['retailer_id'] = retailerId;
       if (fromDate != null) params['from_date'] = fromDate;
       if (toDate != null) params['to_date'] = toDate;
+      var url = userState.user?.role == 'retailer' ? '/retailer/bills' : '/bills';
 
-      final response = await _apiClient.get('/bill/history', queryParameters: params);
+      final response = await _apiClient.get(url, queryParameters: params);
       final data = response.data['bills'] as List;
       final bills = data.map((e) => BillModel.fromJson(e)).toList();
       state = state.copyWith(bills: bills, isLoading: false);

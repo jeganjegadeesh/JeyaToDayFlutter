@@ -51,7 +51,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
   // Create product
   Future<bool> createProduct({
     required String name,
-    String? tamilName,
     required double price,
     String? category,
   }) async {
@@ -60,7 +59,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
         '/products',
         data: {
           'name': name,
-          'tamil_name': tamilName,
           'price': price,
           'category': category,
         },
@@ -77,7 +75,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
   Future<bool> updateProduct({
     required int id,
     required String name,
-    required String tamilName,
     required double price,
     String? category,
   }) async {
@@ -86,7 +83,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
         '/products/$id',
         data: {
           'name': name,
-          'tamil_name': tamilName,
           'price': price,
           'category': category,
         },

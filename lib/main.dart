@@ -1,321 +1,100 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:jeyatoday/l10n/app_localizations.dart';
-import 'core/constants/app_assets.dart';
-import 'core/constants/app_constants.dart';
-import 'data/providers/auth_provider.dart';
-import 'data/providers/theme_provider.dart';
-import 'data/providers/language_provider.dart';
-import 'presentation/screens/auth/login_screen.dart';
-import 'presentation/screens/dashboard/dashboard_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/auth_provider.dart';
+import 'providers/font_size_provider.dart';
+import 'providers/locale_provider.dart';
+import 'providers/theme_provider.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/common/dashboard/home_shell.dart';
+import 'screens/splash/splash_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: JeyaToDayApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: AjApp()));
 }
 
-class JeyaToDayApp extends ConsumerWidget {
-  const JeyaToDayApp({super.key});
+class AjApp extends ConsumerWidget {
+  const AjApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(themeProvider);
-    final locale = ref.watch(languageProvider);
-    final primary = themeState.primaryColor;
+    final locale = ref.watch(localeProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final fontSizeCode = ref.watch(fontSizeProvider);
+    final fontScale = fontSizeScale[fontSizeCode] ?? 1.0;
+
+    // Touch authProvider here so session restoration begins immediately
+    // (while the splash screen is showing) instead of only once the
+    // splash screen hands off to _RootRouter.
+    ref.watch(authProvider);
+
+    // Keep theme / language / font size in sync with the signed-in user's
+    // saved preferences (set on the Settings screen) the moment they change
+    // — e.g. right after login/restoreSession, or after Settings updates
+    // the profile.
+    ref.listen<AuthProvider>(authProvider, (previous, next) {
+      final user = next.user;
+      if (user == null) return;
+      if (user.language != previous?.user?.language) {
+        ref.read(localeProvider.notifier).setLocale(user.language);
+      }
+      if (user.theme != previous?.user?.theme) {
+        ref.read(themeModeProvider.notifier).setThemeString(user.theme);
+      }
+      if (user.fontSize != previous?.user?.fontSize) {
+        ref.read(fontSizeProvider.notifier).setFontSize(user.fontSize);
+      }
+    });
+
     return MaterialApp(
-      title: AppConstants.appName,
+      title: 'AJ Project',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color(0xFF1565C0),
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorSchemeSeed: const Color(0xFF1565C0),
+      ),
+      themeMode: themeMode,
       locale: locale,
-      supportedLocales: const [
-        Locale('en'),
-        Locale('ta'),
-      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
-        AppLocalizations.delegate,
+        AppLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primary,
-          primary: primary,
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
-        appBarTheme: AppBarTheme(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: primary, width: 2),
-          ),
-        ),
-        tabBarTheme: TabBarThemeData(
-          labelColor: primary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: primary,
-        ),
-        checkboxTheme: CheckboxThemeData(
-          fillColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? primary
-                : null,
-          ),
-        ),
-        radioTheme: RadioThemeData(
-          fillColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? primary
-                : null,
-          ),
-        ),
-        switchTheme: SwitchThemeData(
-          thumbColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? primary
-                : null,
-          ),
-          trackColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? primary.withOpacity(0.5)
-                : null,
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primary,
-          primary: primary,
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1A1A2E),
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        cardColor: const Color(0xFF1E1E1E),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF2A2A2A),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFF3A3A3A)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFF3A3A3A)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: primary, width: 2),
-          ),
-        ),
-      ),
-      themeMode: themeState.isDark
-          ? ThemeMode.dark
-          : ThemeMode.light,
-      home: const SplashScreen(),
+      builder: (context, child) {
+        // Apply the user's chosen font-size scale app-wide, immediately.
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(textScaler: TextScaler.linear(fontScale)),
+          child: child!,
+        );
+      },
+      home: SplashScreen(nextScreenBuilder: (_) => const _RootRouter()),
     );
   }
 }
 
-class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+class _RootRouter extends ConsumerWidget {
+  const _RootRouter();
 
   @override
-  ConsumerState<SplashScreen> createState() =>
-      _SplashScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
 
-class _SplashScreenState
-    extends ConsumerState<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _fadeAnimation = Tween<double>(begin: 0, end: 1)
-        .animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    ));
-    _scaleAnimation =
-        Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.elasticOut,
-      ),
-    );
-    _controller.forward();
-    _checkAuth();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-
-    // Listen until checkedLogin is true
-    ref.listenManual(authProvider, (previous, next) {
-      if (!next.checkedLogin) return;
-      if (!mounted) return;
-
-      if (next.isLoggedIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
-    }, fireImmediately: true); // ← checks current state immediately too
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final primary =
-        ref.watch(themeProvider).primaryColor;
-
-    return Scaffold(
-      backgroundColor: primary,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            Colors.black.withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Image.asset(
-                    AppAssets.logo,
-                    height: 65,
-                    width: 65,
-                  ),
-                  // Icon(
-                  //   Icons.icecream,
-                  //   size: 65,
-                  //   color: primary,
-                  // ),
-                ),
-                const SizedBox(height: 28),
-
-                // App Name
-                Text(
-                  AppConstants.appName,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Subtitle
-                Text(
-                  'Ice Cream Distribution System',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 60),
-
-                // Loading indicator
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 3,
-                    backgroundColor:
-                        Colors.white.withOpacity(0.3),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    if (auth.loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (!auth.isLoggedIn) {
+      return const LoginScreen();
+    }
+    return const HomeShell();
   }
 }

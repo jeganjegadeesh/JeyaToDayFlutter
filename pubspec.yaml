@@ -1,56 +1,37 @@
-name: jeyatoday
-description: "Ice Cream Distribution System"
+name: aj_project
+description: AJ Project - Retail Ice Cream Distribution Management System
 publish_to: 'none'
 version: 1.0.0+1
-
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-
+  sdk: '>=3.3.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
-
-  # HTTP & API
-  dio: ^5.4.0
-
-  # State Management
-  flutter_riverpod: ^2.5.1
-
-  # Local Storage
-  shared_preferences: ^2.2.3
-  flutter_secure_storage: ^9.0.0
-
-  # UI
   cupertino_icons: ^1.0.6
-  google_fonts: ^6.2.1
-
-  # Utils
-  intl: ^0.20.2
-  equatable: ^2.0.5
-
-  # Responsive
-  flutter_screenutil: ^5.9.0
-
-  # Print / PDF
-  pdf: ^3.10.8
-  printing: ^5.12.0
-
-  # Theme
-  flex_color_picker: ^3.3.0
-
+  # State management
+  flutter_riverpod: ^2.5.1
   # Localization
   flutter_localizations:
     sdk: flutter
-  flutter_gen: ^5.13.0+1
-
+  # Networking
+  http: ^1.2.1
+  # Local persistence (auth token, theme/lang/font prefs)
+  shared_preferences: ^2.2.3
+  # Formatting
+  intl: ^0.20.2
+  # Charts (Sales / Earnings bar chart)
+  fl_chart: ^0.68.0
+  # Image picking (company logo upload)
+  image_picker: ^1.1.2
+  # PDF preview / printing for bills
+  printing: ^5.13.1
+  pdf: ^3.11.0
+  url_launcher: ^6.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
-
+  flutter_lints: ^4.0.0
 flutter:
   uses-material-design: true
-  generate: true
-
   assets:
-    - assets/images/
+    - assets/logo.png

@@ -1,691 +1,638 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'app_localizations_en.dart';
-import 'app_localizations_ta.dart';
-
-// ignore_for_file: type=lint
-
-/// Callers can lookup localized strings with an instance of AppLocalizations
-/// returned by `AppLocalizations.of(context)`.
+/// Lightweight, hand-rolled localization (no `flutter gen-l10n` build step
+/// required). Add new keys to both maps below as you localize more screens.
 ///
-/// Applications need to include `AppLocalizations.delegate()` in their app's
-/// `localizationDelegates` list, and the locales they support in the app's
-/// `supportedLocales` list. For example:
-///
+/// Usage:
 /// ```dart
-/// import 'l10n/app_localizations.dart';
-///
-/// return MaterialApp(
-///   localizationsDelegates: AppLocalizations.localizationsDelegates,
-///   supportedLocales: AppLocalizations.supportedLocales,
-///   home: MyApplicationHome(),
-/// );
+/// Text(context.l10n.t('settings'))
 /// ```
-///
-/// ## Update pubspec.yaml
-///
-/// Please make sure to update your pubspec.yaml to include the following
-/// packages:
-///
-/// ```yaml
-/// dependencies:
-///   # Internationalization support.
-///   flutter_localizations:
-///     sdk: flutter
-///   intl: any # Use the pinned version from flutter_localizations
-///
-///   # Rest of dependencies
-/// ```
-///
-/// ## iOS Applications
-///
-/// iOS applications define key application metadata, including supported
-/// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
-/// file.
-///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
-/// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
-///
-/// Next, select the Information Property List item, select Add Item from the
-/// Editor menu, then select Localizations from the pop-up menu.
-///
-/// Select and expand the newly-created Localizations item then, for each
-/// locale your application supports, add a new item and select the locale
-/// you wish to add from the pop-up menu in the Value field. This list should
-/// be consistent with the languages listed in the AppLocalizations.supportedLocales
-/// property.
-abstract class AppLocalizations {
-  AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+class AppLocalizations {
+  final Locale locale;
+  AppLocalizations(this.locale);
 
-  final String localeName;
-
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
-
-  /// A list of this localizations delegate along with the default localizations
-  /// delegates.
-  ///
-  /// Returns a list of localizations delegates containing this delegate along with
-  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
-  /// and GlobalWidgetsLocalizations.delegate.
-  ///
-  /// Additional delegates can be added by appending to this list in
-  /// MaterialApp. This list does not have to be used at all if a custom list
-  /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
-
-  /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('ta')
-  ];
-
-  /// No description provided for @appName.
-  ///
-  /// In en, this message translates to:
-  /// **'Aj'**
-  String get appName;
-
-  /// No description provided for @login.
-  ///
-  /// In en, this message translates to:
-  /// **'Login'**
-  String get login;
-
-  /// No description provided for @logout.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get logout;
-
-  /// No description provided for @mobile.
-  ///
-  /// In en, this message translates to:
-  /// **'Mobile Number'**
-  String get mobile;
-
-  /// No description provided for @password.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get password;
-
-  /// No description provided for @dashboard.
-  ///
-  /// In en, this message translates to:
-  /// **'Dashboard'**
-  String get dashboard;
-
-  /// No description provided for @products.
-  ///
-  /// In en, this message translates to:
-  /// **'Products'**
-  String get products;
-
-  /// No description provided for @retailers.
-  ///
-  /// In en, this message translates to:
-  /// **'Retailers'**
-  String get retailers;
-
-  /// No description provided for @giveStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Give Stock'**
-  String get giveStock;
-
-  /// No description provided for @returns.
-  ///
-  /// In en, this message translates to:
-  /// **'Returns'**
-  String get returns;
-
-  /// No description provided for @bills.
-  ///
-  /// In en, this message translates to:
-  /// **'Bills'**
-  String get bills;
-
-  /// No description provided for @reports.
-  ///
-  /// In en, this message translates to:
-  /// **'Reports'**
-  String get reports;
-
-  /// No description provided for @profile.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile'**
-  String get profile;
-
-  /// No description provided for @settings.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings'**
-  String get settings;
-
-  /// No description provided for @addProduct.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Product'**
-  String get addProduct;
-
-  /// No description provided for @editProduct.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Product'**
-  String get editProduct;
-
-  /// No description provided for @deleteProduct.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete Product'**
-  String get deleteProduct;
-
-  /// No description provided for @productName.
-  ///
-  /// In en, this message translates to:
-  /// **'Product Name'**
-  String get productName;
-
-  /// No description provided for @tamilName.
-  ///
-  /// In en, this message translates to:
-  /// **'Tamil Name'**
-  String get tamilName;
-
-  /// No description provided for @price.
-  ///
-  /// In en, this message translates to:
-  /// **'Price'**
-  String get price;
-
-  /// No description provided for @category.
-  ///
-  /// In en, this message translates to:
-  /// **'Category'**
-  String get category;
-
-  /// No description provided for @addRetailer.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Retailer'**
-  String get addRetailer;
-
-  /// No description provided for @editRetailer.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Retailer'**
-  String get editRetailer;
-
-  /// No description provided for @deleteRetailer.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete Retailer'**
-  String get deleteRetailer;
-
-  /// No description provided for @fullName.
-  ///
-  /// In en, this message translates to:
-  /// **'Full Name'**
-  String get fullName;
-
-  /// No description provided for @commission.
-  ///
-  /// In en, this message translates to:
-  /// **'Commission (%)'**
-  String get commission;
-
-  /// No description provided for @giveStockTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Stock Distribution'**
-  String get giveStockTitle;
-
-  /// No description provided for @stockHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Stock History'**
-  String get stockHistory;
-
-  /// No description provided for @recordReturn.
-  ///
-  /// In en, this message translates to:
-  /// **'Record Return'**
-  String get recordReturn;
-
-  /// No description provided for @returnHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Return History'**
-  String get returnHistory;
-
-  /// No description provided for @generateBill.
-  ///
-  /// In en, this message translates to:
-  /// **'Generate Bill'**
-  String get generateBill;
-
-  /// No description provided for @billHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Bill History'**
-  String get billHistory;
-
-  /// No description provided for @totalSales.
-  ///
-  /// In en, this message translates to:
-  /// **'Total Sales'**
-  String get totalSales;
-
-  /// No description provided for @totalCommission.
-  ///
-  /// In en, this message translates to:
-  /// **'Commission'**
-  String get totalCommission;
-
-  /// No description provided for @finalAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Final Amount'**
-  String get finalAmount;
-
-  /// No description provided for @given.
-  ///
-  /// In en, this message translates to:
-  /// **'Given'**
-  String get given;
-
-  /// No description provided for @returned.
-  ///
-  /// In en, this message translates to:
-  /// **'Returned'**
-  String get returned;
-
-  /// No description provided for @sold.
-  ///
-  /// In en, this message translates to:
-  /// **'Sold'**
-  String get sold;
-
-  /// No description provided for @amount.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount'**
-  String get amount;
-
-  /// No description provided for @date.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get date;
-
-  /// No description provided for @selectDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Date'**
-  String get selectDate;
-
-  /// No description provided for @selectRetailer.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Retailer'**
-  String get selectRetailer;
-
-  /// No description provided for @search.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get search;
-
-  /// No description provided for @add.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get add;
-
-  /// No description provided for @edit.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get edit;
-
-  /// No description provided for @delete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get delete;
-
-  /// No description provided for @cancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get cancel;
-
-  /// No description provided for @save.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
-  /// No description provided for @update.
-  ///
-  /// In en, this message translates to:
-  /// **'Update'**
-  String get update;
-
-  /// No description provided for @confirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm'**
-  String get confirm;
-
-  /// No description provided for @yes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get yes;
-
-  /// No description provided for @no.
-  ///
-  /// In en, this message translates to:
-  /// **'No'**
-  String get no;
-
-  /// No description provided for @success.
-  ///
-  /// In en, this message translates to:
-  /// **'Success'**
-  String get success;
-
-  /// No description provided for @error.
-  ///
-  /// In en, this message translates to:
-  /// **'Error'**
-  String get error;
-
-  /// No description provided for @noDataFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No data found'**
-  String get noDataFound;
-
-  /// No description provided for @loading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading...'**
-  String get loading;
-
-  /// No description provided for @todaySales.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Sales'**
-  String get todaySales;
-
-  /// No description provided for @todayBills.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Bills'**
-  String get todayBills;
-
-  /// No description provided for @todayStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Stock'**
-  String get todayStock;
-
-  /// No description provided for @todayReturns.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Returns'**
-  String get todayReturns;
-
-  /// No description provided for @editProfile.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Profile'**
-  String get editProfile;
-
-  /// No description provided for @changePassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Password'**
-  String get changePassword;
-
-  /// No description provided for @currentPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Current Password'**
-  String get currentPassword;
-
-  /// No description provided for @newPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'New Password'**
-  String get newPassword;
-
-  /// No description provided for @printBill.
-  ///
-  /// In en, this message translates to:
-  /// **'Print Bill'**
-  String get printBill;
-
-  /// No description provided for @deleteConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to delete?'**
-  String get deleteConfirm;
-
-  /// No description provided for @billDeleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Bill deleted successfully'**
-  String get billDeleted;
-
-  /// No description provided for @stockDistributed.
-  ///
-  /// In en, this message translates to:
-  /// **'Stock distributed successfully'**
-  String get stockDistributed;
-
-  /// No description provided for @returnRecorded.
-  ///
-  /// In en, this message translates to:
-  /// **'Returns recorded successfully'**
-  String get returnRecorded;
-
-  /// No description provided for @billGenerated.
-  ///
-  /// In en, this message translates to:
-  /// **'Bill generated successfully'**
-  String get billGenerated;
-
-  /// No description provided for @profileUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile updated successfully'**
-  String get profileUpdated;
-
-  /// No description provided for @passwordUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Password updated successfully'**
-  String get passwordUpdated;
-
-  /// No description provided for @theme.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme'**
-  String get theme;
-
-  /// No description provided for @language.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get language;
-
-  /// No description provided for @english.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get english;
-
-  /// No description provided for @tamil.
-  ///
-  /// In en, this message translates to:
-  /// **'தமிழ்'**
-  String get tamil;
-
-  /// No description provided for @chooseThemeColor.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose Theme Color'**
-  String get chooseThemeColor;
-
-  /// No description provided for @quantity.
-  ///
-  /// In en, this message translates to:
-  /// **'Quantity'**
-  String get quantity;
-
-  /// No description provided for @addItem.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Item'**
-  String get addItem;
-
-  /// No description provided for @distributeStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Distribute Stock'**
-  String get distributeStock;
-
-  /// No description provided for @fromDate.
-  ///
-  /// In en, this message translates to:
-  /// **'From Date'**
-  String get fromDate;
-
-  /// No description provided for @toDate.
-  ///
-  /// In en, this message translates to:
-  /// **'To Date'**
-  String get toDate;
-
-  /// No description provided for @summary.
-  ///
-  /// In en, this message translates to:
-  /// **'Summary'**
-  String get summary;
-
-  /// No description provided for @dailySummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily Summary'**
-  String get dailySummary;
-
-  /// No description provided for @retailerSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Retailer Summary'**
-  String get retailerSummary;
-
-  /// No description provided for @viewBill.
-  ///
-  /// In en, this message translates to:
-  /// **'View Bill'**
-  String get viewBill;
-
-  /// No description provided for @deleteBill.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete Bill'**
-  String get deleteBill;
-
-  /// No description provided for @billNo.
-  ///
-  /// In en, this message translates to:
-  /// **'Bill No'**
-  String get billNo;
-
-  /// No description provided for @cannotEditBilled.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot edit. Bill already generated for this date.'**
-  String get cannotEditBilled;
-
-  /// No description provided for @myBills.
-  ///
-  /// In en, this message translates to:
-  /// **'My Bills'**
-  String get myBills;
-
-  /// No description provided for @myStock.
-  ///
-  /// In en, this message translates to:
-  /// **'My Stock'**
-  String get myStock;
-
-  /// No description provided for @myReturns.
-  ///
-  /// In en, this message translates to:
-  /// **'My Returns'**
-  String get myReturns;
-
-  /// No description provided for @users.
-  ///
-  /// In en, this message translates to:
-  /// **'Users'**
-  String get users;
+  static const supportedLocales = [Locale('en'), Locale('ta')];
+
+  static const _en = <String, String>{
+    'appTitle': 'AJ Project',
+    'appTagline': 'Retail Ice Cream Distribution Management',
+    'login': 'Login',
+    'mobileNumber': 'Mobile Number',
+    'password': 'Password',
+    'dashboard': 'Dashboard',
+    'users': 'Users',
+    'products': 'Products',
+    'retailers': 'Retailers',
+    'giveStock': 'Give Stock',
+    'returnStock': 'Return Stock',
+    'cashPayment': 'Cash Payment',
+    'billGenerate': 'Bill Generate',
+    'reports': 'Reports',
+    'cashReport': 'Cash Report',
+    'rawMaterials': 'Raw Materials',
+    'expenses': 'Expenses',
+    'retailerLoans': 'Retailer Loans',
+    'companySetup': 'Company Setup',
+    'settings': 'Settings',
+    'profile': 'Profile',
+    'theme': 'Theme',
+    'light': 'Light',
+    'dark': 'Dark',
+    'language': 'Language',
+    'tamil': 'Tamil',
+    'english': 'English',
+    'fontSize': 'Font Size',
+    'appInfo': 'App Info',
+    'logout': 'Logout',
+    'received': 'Received',
+    'returned': 'Returned',
+    'paid': 'Paid',
+    'bills': 'Bills',
+    'required': 'Required',
+    'defaultPasswordHint': 'Default password for new accounts is 123456',
+    'connectionError': 'Unable to connect. Check your network / server URL.',
+    'quickActions': 'Quick Actions',
+    'creations': 'Creations',
+    'actionsMenu': 'Actions',
+    'accountType': 'Account Type',
+    'verifiedAdmin': 'Verified Admin',
+    'verifiedManager': 'Verified Manager',
+    'verifiedRetailer': 'Verified',
+    'memberSince': 'Member Since',
+    'accessLevel': 'Access Level',
+    'fullAccess': 'Full Access',
+    'managerAccess': 'Manager Access',
+    'standardAccess': 'Standard Access',
+    'changeProfilePhoto': 'Change Photo',
+    'saveChanges': 'Save Changes',
+    'sales': 'Sales',
+    'weekly': 'Weekly',
+    'monthly': 'Monthly',
+    'totalRetailers': 'Total Retailers',
+    'billsThisMonth': 'Bills This Month',
+    'noSalesData': 'No sales data yet',
+    'totalSalesToday': 'Total Sales (Today)',
+    'pendingLoans': 'Pending Loans',
+    'recentTransactions': 'Recent Transactions',
+    'generateReport': 'Generate Report',
+    'viewAll': 'View All',
+    'noTransactionsYet': 'No transactions yet',
+    'addUser': 'Add User',
+    'editUser': 'Edit User',
+    'name': 'Name',
+    'type': 'Type',
+    'phoneNumber': 'Phone Number',
+    'manager': 'Manager',
+    'admin': 'Admin',
+    'save': 'Save',
+    'cancel': 'Cancel',
+    'edit': 'Edit',
+    'delete': 'Delete',
+    'deleteUser': 'Delete User',
+    'deleteUserConfirm': 'Delete this user?',
+    'resetPassword': 'Reset Password',
+    'resetPasswordConfirm': 'Reset password to 123456?',
+    'passwordResetSuccess': 'Password reset to 123456',
+    'searchByName': 'Search by name',
+    'all': 'All',
+    'changePhoto': 'Change Photo',
+    'profilePhoto': 'Profile Photo',
+    'noUsersFound': 'No users found',
+    'addProduct': 'Add Product',
+    'editProduct': 'Edit Product',
+    'rate': 'Rate (Rs.)',
+    'retail': 'Retail',
+    'bulk': 'Bulk',
+    'both': 'Both',
+    'allTypes': 'All Types',
+    'searchByProductName': 'Search by product name',
+    'noProductsFound': 'No products found',
+    'deleteProduct': 'Delete Product',
+    'deleteProductConfirm': 'Delete this product?',
+    'validNumber': 'Enter a valid number',
+    'addRetailer': 'Add Retailer',
+    'editRetailer': 'Edit Retailer',
+    'commission': 'Commission (%)',
+    'autoAccountHint': 'A login account will be created automatically with default password 123456.',
+    'deleteRetailer': 'Delete Retailer',
+    'deleteRetailerConfirm': 'Delete this retailer?',
+    'noRetailersFound': 'No retailers found',
+    'validPercent': 'Enter a valid %',
+    'history': 'History',
+    'newEntry': 'New Entry',
+    'editEntry': 'Edit Entry',
+    'noEntriesYet': 'No entries yet',
+    'billed': 'Billed',
+    'pending': 'Pending',
+    'deleteEntry': 'Delete Entry',
+    'deleteEntryConfirm': 'Delete this entry?',
+    'close': 'Close',
+    'retailer': 'Retailer',
+    'selectRetailer': 'Select Retailer',
+    'date': 'Date',
+    'qty': 'Qty',
+    'selectRetailerError': 'Please select a retailer',
+    'selectProductQtyError': 'Select at least one product with a quantity',
+    'itemsCount': 'items',
+    'searchRetailer': 'Search retailer',
+    'noRetailerSelected': 'Tap to choose a retailer',
+    'newPayment': 'New Payment',
+    'amount': 'Amount (Rs.)',
+    'validAmount': 'Enter a valid amount',
+    'noPaymentsYet': 'No payments yet',
+    'deletePayment': 'Delete Payment',
+    'deletePaymentConfirm': 'Delete this payment?',
+    'newBill': 'New Bill',
+    'billingDate': 'Billing Date',
+    'billingDateHint': 'Covers transactions up to this date',
+    'preview': 'Preview',
+    'loadingLabel': 'Loading...',
+    'generate': 'Generate',
+    'generatingLabel': 'Generating...',
+    'selectRetailerFirst': 'Select a retailer first',
+    'generateBillTitle': 'Generate Bill',
+    'generateBillConfirm': 'Finalize and save this bill? This cannot be undone from here.',
+    'billGeneratedSuccess': 'Bill generated successfully.',
+    'noBillsYet': 'No bills yet',
+    'deleteBill': 'Delete Bill',
+    'deleteBillConfirm': 'Delete this bill? Underlying transactions will be unlocked for re-billing.',
+    'totalAmount': 'Total Amount',
+    'grandTotal': 'Grand Total',
+    'pendingRecords': 'Pending Records (up to billing date)',
+    'giveStockRecords': 'Given Stock',
+    'returnStockRecords': 'Returned Stock',
+    'cashPaymentRecords': 'Cash Payments',
+    'noRecordsFound': 'No records found',
+    'productWiseTotal': 'Product-wise Total',
+    'perDayQtyNote': '* Quantities per day, combined across all records',
+    'givenStockAvailable': 'Given Stock (Available to Return)',
+    'noGivenStockFound': 'No pending given stock found for this retailer',
+    'availableToReturn': 'Available',
+    'maxAllowed': 'Max allowed',
+    'noGiveStockForBillError': 'No give-stock records found for this retailer up to the selected date. Add give-stock before generating a bill.',
+    'companyDetailsHint': 'Company details automatically appear on invoices, bills, reports and print formats.',
+    'changeCompanyLogo': 'Change company logo',
+    'companyName': 'Company Name',
+    'gstNumber': 'GST Number',
+    'fullAddress': 'Full Address',
+    'contactNumber': 'Contact Number',
+    'openingBalance': 'Opening Balance (Rs.)',
+    'openingBalanceHint': 'Initial cash available for this company. Cash Report starts from this value.',
+    'companySaved': 'Company details saved.',
+    'companySetupWelcomeTitle': 'Welcome! Let\'s set up your company',
+    'companySetupWelcomeHint': 'Before you get to the dashboard, add your company details. You can update these anytime later from Company Setup.',
+    'completeSetup': 'Complete Setup',
+    'changePassword': 'Change Password',
+    'changePasswordHint': 'Please enter your credentials to update.',
+    'currentPassword': 'Current Password',
+    'newPassword': 'New Password',
+    'update': 'Update',
+    'passwordStrength': 'Password strength',
+    'weak': 'Weak',
+    'medium': 'Medium',
+    'strong': 'Strong',
+    'passwordChangedRelogin': 'Password changed. Please log in again.',
+    'camera': 'Camera',
+    'gallery': 'Gallery',
+
+    // --- Reports hub ---
+    'salesReports': 'Sales Reports',
+    'salesReportsDesc': 'Total, holding and retailer-wise sales',
+    'stockReports': 'Stock Reports',
+    'stockReportsDesc': 'Total, holding and retailer-wise stock',
+    'cashReports': 'Cash Reports',
+    'cashReportsDesc': 'Cash balance, income and expenses',
+
+    // --- Sales / Stock report types ---
+    'totalSales': 'Total Sales',
+    'holdingSales': 'Holding Sales',
+    'retailerTotalSales': 'Retailer Total Sales',
+    'holdingRetailerTotalSales': 'Holding Retailer Total Sales',
+    'totalStockSales': 'Total Stock Sales',
+    'holdingTotalStock': 'Holding Total Stock',
+    'retailerTotalStockSales': 'Retailer Total Stock Sales',
+    'holdingRetailerTotalStock': 'Holding Retailer Total Stock',
+
+    // --- Sales / Stock report screen common ---
+    'reportType': 'Report',
+    'last30Days': 'Last 30 days',
+    'resetTo30DaysTooltip': 'Reset to last 30 days',
+    'selectRetailerToView': 'Select a retailer to view this report',
+    'lastMonthTotal': 'LAST MONTH TOTAL',
+    'thisMonthTotal': 'THIS MONTH TOTAL',
+    'amountCol': 'Amount',
+    'product': 'Product',
+    'rateCol': 'Rate',
+    'value': 'Value',
+    'totalOfPeriod': 'Total of this period',
+    'noSalesInPeriod': 'No sales in this period',
+    'noRetailerHoldingStock': 'No retailer is currently holding stock',
+    'totalHoldingValue': 'Total holding value',
+    'noSalesForRetailerPeriod': 'No sales for this retailer in this period',
+    'totalSalesRow': 'Total sales',
+    'noUnbilledHoldingStock': 'This retailer has no unbilled holding stock',
+    'noStockSoldPeriod': 'No stock sold in this period',
+    'totalHoldingQty': 'Total holding qty',
+    'noProductHeldByRetailer': 'No product is currently held by any retailer',
+    'noStockSoldForRetailerPeriod': 'No stock sold for this retailer in this period',
+    'totalStockSold': 'Total stock sold',
+
+    // --- Cash report ---
+    'filterToday': 'TODAY',
+    'filterYesterday': 'YESTERDAY',
+    'filterThisWeek': 'THIS WEEK',
+    'filterThisMonth': 'THIS MONTH',
+    'filterCustom': 'CUSTOM',
+    'currentCashBalance': 'Current Cash Balance',
+    'openingBalanceRow': 'Opening Balance',
+    'cashPaymentsReceived': '+ Cash Payments Received',
+    'otherIncomeFuture': '+ Other Income (future)',
+    'rawMaterialExpensesRow': '- Raw Material Expenses',
+    'retailerLoanAmountsRow': '- Retailer Loan Amounts',
+    'otherExpensesFuture': '- Other Expenses (future)',
+    'totalIncome': 'Total Income',
+    'totalExpense': 'Total Expense',
+
+    // --- Retailer reports ---
+    'myReports': 'My Reports',
+    'stockTab': 'Stock',
+    'productWiseSales': 'Product-wise Sales',
+    'holdingSalesUnsettled': 'Holding Sales (unsettled)',
+    'productWiseSoldQty': 'Product-wise Sold Qty',
+    'currentStockBalanceHolding': 'Current Stock Balance (Holding)',
+
+    // --- Bill settlement confirmation ---
+    'settleBillTitle': 'Bill Settlement',
+    'settleBillQuestion': 'Did the retailer pay the outstanding amount now?',
+    'outstandingAmount': 'Outstanding Amount',
+    'paidFull': 'Paid in Full',
+    'paidPartial': 'Paid Partially',
+    'notPaidNow': 'Not Paid Now',
+    'amountPaidNow': 'Amount Paid (Rs.)',
+    'settle': 'Settle',
+    'skip': 'Skip',
+    'billSettledSuccess': 'Payment recorded.',
+    'remainingBalance': 'Remaining Balance',
+    'fullySettled': 'Fully Settled',
+    'settleNow': 'Settle Now',
+    'settleBillFor': 'Settle bill for',
+    'enterValidSettleAmount': 'Enter a valid amount up to the outstanding balance',
+
+    // --- Cash report ledger ---
+    'transactions': 'Transactions',
+    'credit': 'Credit',
+    'debit': 'Debit',
+    'runningBalance': 'Balance',
+    'noTransactionsInPeriod': 'No transactions in this period',
+    'totalCredit': 'Total Credit',
+    'totalDebit': 'Total Debit',
+    'closingBalance': 'Closing Balance',
+    'catCashPayment': 'Cash Payment',
+    'catBillSettlement': 'Bill Settlement',
+    'catRawMaterialExpense': 'Raw Material Expense',
+    'catRetailerLoan': 'Retailer Loan',
+    'settledLabel': 'Settled',
+    'paidInFullLabel': 'Paid in Full',
+
+    // --- Retailer call action ---
+    'call': 'Call',
+    'callNotAvailable': 'Unable to start the call',
+
+    // --- Bill receipt / print popup ---
+    'print': 'Print',
+    'printing': 'Printing…',
+    'settleInFull': 'Settle in Full',
+    'billReceiptTitle': 'Receipt',
+    'customer': 'Customer',
+    'billNo': 'Bill No',
+    'grandTotalStillOwed': 'Grand Total (Still Owed)',
+  };
+
+  static const _ta = <String, String>{
+    'appTitle': 'ஏஜே ப்ராஜெக்ட்',
+    'appTagline': 'சில்லறை ஐஸ்கிரீம் விநியோக மேலாண்மை',
+    'login': 'உள்நுழைய',
+    'mobileNumber': 'மொபைல் எண்',
+    'password': 'கடவுச்சொல்',
+    'dashboard': 'டாஷ்போர்டு',
+    'users': 'பயனர்கள்',
+    'products': 'பொருட்கள்',
+    'retailers': 'சில்லறை விற்பனையாளர்கள்',
+    'giveStock': 'ஸ்டாக் வழங்கு',
+    'returnStock': 'ஸ்டாக் திரும்ப',
+    'cashPayment': 'பண செலுத்துதல்',
+    'billGenerate': 'பில் உருவாக்கு',
+    'reports': 'அறிக்கைகள்',
+    'cashReport': 'பண அறிக்கை',
+    'rawMaterials': 'மூலப்பொருட்கள்',
+    'expenses': 'செலவுகள்',
+    'retailerLoans': 'விற்பனையாளர் கடன்கள்',
+    'companySetup': 'நிறுவன அமைப்பு',
+    'settings': 'அமைப்புகள்',
+    'profile': 'சுயவிவரம்',
+    'theme': 'தீம்',
+    'light': 'வெளிச்சம்',
+    'dark': 'இருள்',
+    'language': 'மொழி',
+    'tamil': 'தமிழ்',
+    'english': 'ஆங்கிலம்',
+    'fontSize': 'எழுத்து அளவு',
+    'appInfo': 'பயன்பாட்டு தகவல்',
+    'logout': 'வெளியேறு',
+    'received': 'பெறப்பட்டது',
+    'returned': 'திரும்பியது',
+    'paid': 'செலுத்தியது',
+    'bills': 'பில்கள்',
+    'required': 'அவசியம்',
+    'defaultPasswordHint': 'புதிய கணக்குகளுக்கான இயல்புநிலை கடவுச்சொல் 123456',
+    'connectionError': 'இணைக்க முடியவில்லை. உங்கள் நெட்வொர்க் / சர்வர் URL ஐ சரிபார்க்கவும்.',
+    'quickActions': 'விரைவு செயல்கள்',
+    'creations': 'உருவாக்கங்கள்',
+    'actionsMenu': 'செயல்கள்',
+    'accountType': 'கணக்கு வகை',
+    'verifiedAdmin': 'சரிபார்க்கப்பட்ட நிர்வாகி',
+    'verifiedManager': 'சரிபார்க்கப்பட்ட மேலாளர்',
+    'verifiedRetailer': 'சரிபார்க்கப்பட்டது',
+    'memberSince': 'உறுப்பினர் முதல்',
+    'accessLevel': 'அணுகல் நிலை',
+    'fullAccess': 'முழு அணுகல்',
+    'managerAccess': 'மேலாளர் அணுகல்',
+    'standardAccess': 'நிலையான அணுகல்',
+    'changeProfilePhoto': 'படத்தை மாற்று',
+    'saveChanges': 'மாற்றங்களை சேமி',
+    'sales': 'விற்பனை',
+    'weekly': 'வாராந்திரம்',
+    'monthly': 'மாதாந்திரம்',
+    'totalRetailers': 'மொத்த சில்லறை விற்பனையாளர்கள்',
+    'billsThisMonth': 'இந்த மாத பில்கள்',
+    'noSalesData': 'இன்னும் விற்பனை தரவு இல்லை',
+    'totalSalesToday': 'மொத்த விற்பனை (இன்று)',
+    'pendingLoans': 'நிலுவை கடன்கள்',
+    'recentTransactions': 'சமீபத்திய பரிவர்த்தனைகள்',
+    'generateReport': 'அறிக்கை உருவாக்கு',
+    'viewAll': 'அனைத்தையும் காண்க',
+    'noTransactionsYet': 'இன்னும் பரிவர்த்தனைகள் இல்லை',
+    'addUser': 'பயனர் சேர்க்க',
+    'editUser': 'பயனர் திருத்த',
+    'name': 'பெயர்',
+    'type': 'வகை',
+    'phoneNumber': 'தொலைபேசி எண்',
+    'manager': 'மேலாளர்',
+    'admin': 'நிர்வாகி',
+    'save': 'சேமி',
+    'cancel': 'ரத்து',
+    'edit': 'திருத்து',
+    'delete': 'நீக்கு',
+    'deleteUser': 'பயனரை நீக்கு',
+    'deleteUserConfirm': 'இந்த பயனரை நீக்கவா?',
+    'resetPassword': 'கடவுச்சொல்லை மீட்டமை',
+    'resetPasswordConfirm': 'கடவுச்சொல்லை 123456 ஆக மீட்டமைக்கவா?',
+    'passwordResetSuccess': 'கடவுச்சொல் 123456 ஆக மீட்டமைக்கப்பட்டது',
+    'searchByName': 'பெயர் மூலம் தேடு',
+    'all': 'அனைத்தும்',
+    'changePhoto': 'படத்தை மாற்று',
+    'profilePhoto': 'சுயவிவரப் படம்',
+    'noUsersFound': 'பயனர்கள் இல்லை',
+    'addProduct': 'பொருள் சேர்க்க',
+    'editProduct': 'பொருள் திருத்த',
+    'rate': 'விலை (ரூ.)',
+    'retail': 'சில்லறை',
+    'bulk': 'மொத்தம்',
+    'both': 'இரண்டும்',
+    'allTypes': 'அனைத்து வகைகளும்',
+    'searchByProductName': 'பொருள் பெயர் மூலம் தேடு',
+    'noProductsFound': 'பொருட்கள் இல்லை',
+    'deleteProduct': 'பொருளை நீக்கு',
+    'deleteProductConfirm': 'இந்த பொருளை நீக்கவா?',
+    'validNumber': 'சரியான எண்ணை உள்ளிடவும்',
+    'addRetailer': 'விற்பனையாளர் சேர்க்க',
+    'editRetailer': 'விற்பனையாளர் திருத்த',
+    'commission': 'கமிஷன் (%)',
+    'autoAccountHint': 'இயல்புநிலை கடவுச்சொல் 123456 உடன் உள்நுழைவு கணக்கு தானாக உருவாக்கப்படும்.',
+    'deleteRetailer': 'விற்பனையாளரை நீக்கு',
+    'deleteRetailerConfirm': 'இந்த விற்பனையாளரை நீக்கவா?',
+    'noRetailersFound': 'விற்பனையாளர்கள் இல்லை',
+    'validPercent': 'சரியான % ஐ உள்ளிடவும்',
+    'history': 'வரலாறு',
+    'newEntry': 'புதிய பதிவு',
+    'editEntry': 'பதிவை திருத்து',
+    'noEntriesYet': 'இன்னும் பதிவுகள் இல்லை',
+    'billed': 'பில் செய்யப்பட்டது',
+    'pending': 'நிலுவையில்',
+    'deleteEntry': 'பதிவை நீக்கு',
+    'deleteEntryConfirm': 'இந்த பதிவை நீக்கவா?',
+    'close': 'மூடு',
+    'retailer': 'விற்பனையாளர்',
+    'selectRetailer': 'விற்பனையாளரைத் தேர்ந்தெடு',
+    'date': 'தேதி',
+    'qty': 'அளவு',
+    'selectRetailerError': 'தயவுசெய்து ஒரு விற்பனையாளரைத் தேர்ந்தெடுக்கவும்',
+    'selectProductQtyError': 'குறைந்தது ஒரு பொருளையாவது அளவுடன் தேர்ந்தெடுக்கவும்',
+    'itemsCount': 'பொருட்கள்',
+    'searchRetailer': 'விற்பனையாளரைத் தேடு',
+    'noRetailerSelected': 'விற்பனையாளரைத் தேர்ந்தெடுக்க தட்டவும்',
+    'newPayment': 'புதிய கட்டணம்',
+    'amount': 'தொகை (ரூ.)',
+    'validAmount': 'சரியான தொகையை உள்ளிடவும்',
+    'noPaymentsYet': 'இன்னும் கட்டணங்கள் இல்லை',
+    'deletePayment': 'கட்டணத்தை நீக்கு',
+    'deletePaymentConfirm': 'இந்த கட்டணத்தை நீக்கவா?',
+    'newBill': 'புதிய பில்',
+    'billingDate': 'பில்லிங் தேதி',
+    'billingDateHint': 'இந்த தேதி வரையிலான பரிவர்த்தனைகளை உள்ளடக்கும்',
+    'preview': 'முன்னோட்டம்',
+    'loadingLabel': 'ஏற்றுகிறது...',
+    'generate': 'உருவாக்கு',
+    'generatingLabel': 'உருவாக்குகிறது...',
+    'selectRetailerFirst': 'முதலில் ஒரு விற்பனையாளரைத் தேர்ந்தெடுக்கவும்',
+    'generateBillTitle': 'பில் உருவாக்கு',
+    'generateBillConfirm': 'இந்த பில்லை இறுதி செய்து சேமிக்கவா? இதை இங்கிருந்து மாற்ற முடியாது.',
+    'billGeneratedSuccess': 'பில் வெற்றிகரமாக உருவாக்கப்பட்டது.',
+    'noBillsYet': 'இன்னும் பில்கள் இல்லை',
+    'deleteBill': 'பில்லை நீக்கு',
+    'deleteBillConfirm': 'இந்த பில்லை நீக்கவா? அடிப்படை பரிவர்த்தனைகள் மீண்டும் பில் செய்ய திறக்கப்படும்.',
+    'totalAmount': 'மொத்த தொகை',
+    'grandTotal': 'மொத்த தொகை',
+    'pendingRecords': 'நிலுவை பதிவுகள் (பில்லிங் தேதி வரை)',
+    'giveStockRecords': 'வழங்கிய ஸ்டாக்',
+    'returnStockRecords': 'திரும்பிய ஸ்டாக்',
+    'cashPaymentRecords': 'பண செலுத்துதல்கள்',
+    'noRecordsFound': 'பதிவுகள் இல்லை',
+    'productWiseTotal': 'பொருள் வாரியான மொத்தம்',
+    'perDayQtyNote': '* ஒரு நாளுக்கான அளவுகள், அனைத்து பதிவுகளையும் இணைத்தது',
+    'givenStockAvailable': 'வழங்கிய ஸ்டாக் (திரும்பக் கிடைக்கும்)',
+    'noGivenStockFound': 'இந்த விற்பனையாளருக்கு நிலுவையில் வழங்கிய ஸ்டாக் இல்லை',
+    'availableToReturn': 'கிடைக்கும்',
+    'maxAllowed': 'அனுமதிக்கப்படும் அதிகபட்சம்',
+    'noGiveStockForBillError': 'தேர்ந்தெடுக்கப்பட்ட தேதி வரை இந்த விற்பனையாளருக்கு வழங்கிய ஸ்டாக் பதிவுகள் இல்லை. பில் உருவாக்கும் முன் ஸ்டாக் வழங்கவும்.',
+    'companyDetailsHint': 'நிறுவனத்தின் விவரங்கள் விலைப்பட்டியல்கள், பில்கள், அறிக்கைகள் மற்றும் அச்சு வடிவங்களில் தானாகத் தோன்றும்.',
+    'changeCompanyLogo': 'நிறுவன லோகோவை மாற்று',
+    'companyName': 'நிறுவனத்தின் பெயர்',
+    'gstNumber': 'ஜிஎஸ்டி எண்',
+    'fullAddress': 'முழு முகவரி',
+    'contactNumber': 'தொடர்பு எண்',
+    'openingBalance': 'தொடக்க இருப்பு (ரூ.)',
+    'openingBalanceHint': 'இந்த நிறுவனத்திற்கான ஆரம்ப பணம். பண அறிக்கை இந்த மதிப்பிலிருந்து தொடங்கும்.',
+    'companySaved': 'நிறுவன விவரங்கள் சேமிக்கப்பட்டன.',
+    'companySetupWelcomeTitle': 'வரவேற்கிறோம்! உங்கள் நிறுவனத்தை அமைப்போம்',
+    'companySetupWelcomeHint': 'டாஷ்போர்டுக்குச் செல்வதற்கு முன், உங்கள் நிறுவன விவரங்களைச் சேர்க்கவும். இவற்றை பின்னர் எந்த நேரத்திலும் நிறுவன அமைப்பில் புதுப்பிக்கலாம்.',
+    'completeSetup': 'அமைப்பை முடிக்கவும்',
+    'changePassword': 'கடவுச்சொல்லை மாற்று',
+    'changePasswordHint': 'புதுப்பிக்க உங்கள் விவரங்களை உள்ளிடவும்.',
+    'currentPassword': 'தற்போதைய கடவுச்சொல்',
+    'newPassword': 'புதிய கடவுச்சொல்',
+    'update': 'புதுப்பி',
+    'passwordStrength': 'கடவுச்சொல் வலிமை',
+    'weak': 'பலவீனம்',
+    'medium': 'நடுத்தரம்',
+    'strong': 'வலுவானது',
+    'passwordChangedRelogin': 'கடவுச்சொல் மாற்றப்பட்டது. மீண்டும் உள்நுழையவும்.',
+    'camera': 'கேமரா',
+    'gallery': 'கேலரி',
+
+    // --- Reports hub ---
+    'salesReports': 'விற்பனை அறிக்கைகள்',
+    'salesReportsDesc': 'மொத்தம், நிலுவை, விற்பனையாளர் வாரியான விற்பனை',
+    'stockReports': 'ஸ்டாக் அறிக்கைகள்',
+    'stockReportsDesc': 'மொத்தம், நிலுவை, விற்பனையாளர் வாரியான ஸ்டாக்',
+    'cashReports': 'பண அறிக்கைகள்',
+    'cashReportsDesc': 'பண இருப்பு, வருமானம் மற்றும் செலவுகள்',
+
+    // --- Sales / Stock report types ---
+    'totalSales': 'மொத்த விற்பனை',
+    'holdingSales': 'நிலுவை விற்பனை',
+    'retailerTotalSales': 'விற்பனையாளர் மொத்த விற்பனை',
+    'holdingRetailerTotalSales': 'நிலுவை விற்பனையாளர் மொத்த விற்பனை',
+    'totalStockSales': 'மொத்த ஸ்டாக் விற்பனை',
+    'holdingTotalStock': 'நிலுவை மொத்த ஸ்டாக்',
+    'retailerTotalStockSales': 'விற்பனையாளர் மொத்த ஸ்டாக் விற்பனை',
+    'holdingRetailerTotalStock': 'நிலுவை விற்பனையாளர் மொத்த ஸ்டாக்',
+
+    // --- Sales / Stock report screen common ---
+    'reportType': 'அறிக்கை',
+    'last30Days': 'கடந்த 30 நாட்கள்',
+    'resetTo30DaysTooltip': 'கடந்த 30 நாட்களுக்கு மீட்டமை',
+    'selectRetailerToView': 'இந்த அறிக்கையைக் காண ஒரு விற்பனையாளரைத் தேர்ந்தெடுக்கவும்',
+    'lastMonthTotal': 'கடந்த மாத மொத்தம்',
+    'thisMonthTotal': 'இந்த மாத மொத்தம்',
+    'amountCol': 'தொகை',
+    'product': 'பொருள்',
+    'rateCol': 'விலை',
+    'value': 'மதிப்பு',
+    'totalOfPeriod': 'இந்த காலத்தின் மொத்தம்',
+    'noSalesInPeriod': 'இந்த காலத்தில் விற்பனை இல்லை',
+    'noRetailerHoldingStock': 'தற்போது எந்த விற்பனையாளரும் ஸ்டாக் வைத்திருக்கவில்லை',
+    'totalHoldingValue': 'மொத்த நிலுவை மதிப்பு',
+    'noSalesForRetailerPeriod': 'இந்த காலத்தில் இந்த விற்பனையாளருக்கு விற்பனை இல்லை',
+    'totalSalesRow': 'மொத்த விற்பனை',
+    'noUnbilledHoldingStock': 'இந்த விற்பனையாளருக்கு பில் செய்யப்படாத நிலுவை ஸ்டாக் இல்லை',
+    'noStockSoldPeriod': 'இந்த காலத்தில் ஸ்டாக் விற்கப்படவில்லை',
+    'totalHoldingQty': 'மொத்த நிலுவை அளவு',
+    'noProductHeldByRetailer': 'எந்த விற்பனையாளரும் தற்போது எந்த பொருளையும் வைத்திருக்கவில்லை',
+    'noStockSoldForRetailerPeriod': 'இந்த காலத்தில் இந்த விற்பனையாளருக்கு ஸ்டாக் விற்கப்படவில்லை',
+    'totalStockSold': 'மொத்த விற்கப்பட்ட ஸ்டாக்',
+
+    // --- Cash report ---
+    'filterToday': 'இன்று',
+    'filterYesterday': 'நேற்று',
+    'filterThisWeek': 'இந்த வாரம்',
+    'filterThisMonth': 'இந்த மாதம்',
+    'filterCustom': 'விருப்பம்',
+    'currentCashBalance': 'தற்போதைய பண இருப்பு',
+    'openingBalanceRow': 'தொடக்க இருப்பு',
+    'cashPaymentsReceived': '+ பண செலுத்துதல்கள் பெறப்பட்டது',
+    'otherIncomeFuture': '+ பிற வருமானம் (எதிர்காலம்)',
+    'rawMaterialExpensesRow': '- மூலப்பொருள் செலவுகள்',
+    'retailerLoanAmountsRow': '- விற்பனையாளர் கடன் தொகைகள்',
+    'otherExpensesFuture': '- பிற செலவுகள் (எதிர்காலம்)',
+    'totalIncome': 'மொத்த வருமானம்',
+    'totalExpense': 'மொத்த செலவு',
+
+    // --- Retailer reports ---
+    'myReports': 'எனது அறிக்கைகள்',
+    'stockTab': 'ஸ்டாக்',
+    'productWiseSales': 'பொருள் வாரியான விற்பனை',
+    'holdingSalesUnsettled': 'நிலுவை விற்பனை (தீர்க்கப்படாதது)',
+    'productWiseSoldQty': 'பொருள் வாரியான விற்கப்பட்ட அளவு',
+    'currentStockBalanceHolding': 'தற்போதைய ஸ்டாக் இருப்பு (நிலுவை)',
+
+    // --- Bill settlement confirmation ---
+    'settleBillTitle': 'பில் தீர்வு',
+    'settleBillQuestion': 'விற்பனையாளர் நிலுவைத் தொகையை இப்போது செலுத்தினாரா?',
+    'outstandingAmount': 'நிலுவைத் தொகை',
+    'paidFull': 'முழுவதும் செலுத்தினார்',
+    'paidPartial': 'ஓரளவு செலுத்தினார்',
+    'notPaidNow': 'இப்போது செலுத்தவில்லை',
+    'amountPaidNow': 'செலுத்திய தொகை (ரூ.)',
+    'settle': 'தீர்வு செய்',
+    'skip': 'தவிர்',
+    'billSettledSuccess': 'கட்டணம் பதிவு செய்யப்பட்டது.',
+    'remainingBalance': 'மீதமுள்ள இருப்பு',
+    'fullySettled': 'முழுமையாக தீர்க்கப்பட்டது',
+    'settleNow': 'இப்போது தீர்வு செய்',
+    'settleBillFor': 'பில் தீர்வு செய்யவும்',
+    'enterValidSettleAmount': 'நிலுவைத் தொகை வரை சரியான தொகையை உள்ளிடவும்',
+
+    // --- Cash report ledger ---
+    'transactions': 'பரிவர்த்தனைகள்',
+    'credit': 'வரவு',
+    'debit': 'பற்று',
+    'runningBalance': 'இருப்பு',
+    'noTransactionsInPeriod': 'இந்த காலத்தில் பரிவர்த்தனைகள் இல்லை',
+    'totalCredit': 'மொத்த வரவு',
+    'totalDebit': 'மொத்த பற்று',
+    'closingBalance': 'இறுதி இருப்பு',
+    'catCashPayment': 'பண செலுத்துதல்',
+    'catBillSettlement': 'பில் தீர்வு',
+    'catRawMaterialExpense': 'மூலப்பொருள் செலவு',
+    'catRetailerLoan': 'விற்பனையாளர் கடன்',
+    'settledLabel': 'தீர்க்கப்பட்டது',
+    'paidInFullLabel': 'முழுவதும் செலுத்தப்பட்டது',
+
+    // --- Retailer call action ---
+    'call': 'அழை',
+    'callNotAvailable': 'அழைப்பைத் தொடங்க முடியவில்லை',
+
+    // --- Bill receipt / print popup ---
+    'print': 'அச்சிடு',
+    'printing': 'அச்சிடுகிறது…',
+    'settleInFull': 'முழுவதும் தீர்வு செய்',
+    'billReceiptTitle': 'ரசீது',
+    'customer': 'வாடிக்கையாளர்',
+    'billNo': 'பில் எண்',
+    'grandTotalStillOwed': 'மொத்த தொகை (நிலுவை)',
+  };
+
+  Map<String, String> get _dict => locale.languageCode == 'ta' ? _ta : _en;
+
+  /// Translate [key]; falls back to English, then to the key itself.
+  String t(String key) => _dict[key] ?? _en[key] ?? key;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
-
-  @override
-  Future<AppLocalizations> load(Locale locale) {
-    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
-  }
+class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const AppLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ta'].contains(locale.languageCode);
+      AppLocalizations.supportedLocales.any((l) => l.languageCode == locale.languageCode);
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
-}
-
-AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when only language code is specified.
-  switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'ta':
-      return AppLocalizationsTa();
+  Future<AppLocalizations> load(Locale locale) async {
+    // Keep intl's DateFormat/NumberFormat (used across report/bill screens)
+    // in sync with the active app locale.
+    intl.Intl.defaultLocale = locale.languageCode;
+    return AppLocalizations(locale);
   }
 
-  throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+  @override
+  bool shouldReload(AppLocalizationsDelegate old) => false;
+}
+
+extension AppLocalizationsX on BuildContext {
+  AppLocalizations get l10n => AppLocalizations.of(this);
 }

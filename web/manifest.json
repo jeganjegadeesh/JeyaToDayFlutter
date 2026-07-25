@@ -1,6 +1,6 @@
 {
-    "name": "jeyatoday",
-    "short_name": "jeyatoday",
+    "name": "aj_project",
+    "short_name": "aj_project",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

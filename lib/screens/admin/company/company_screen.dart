@@ -101,13 +101,21 @@ class _CompanyScreenState extends State<CompanyScreen> {
     final t = context.l10n;
     setState(() => _saving = true);
     try {
-      final fields = {
-        'name': _nameCtrl.text.trim(),
-        'gst_number': _gstCtrl.text.trim(),
-        'full_address': _addressCtrl.text.trim(),
-        'contact_number': _contactCtrl.text.trim(),
-        'opening_balance': double.tryParse(_openingBalanceCtrl.text) ?? 0,
-      };
+    var fields = {
+      'name': _nameCtrl.text.trim(),
+      'gst_number': _gstCtrl.text.trim(),
+      'full_address': _addressCtrl.text.trim(),
+      'contact_number': _contactCtrl.text.trim(),
+    };
+
+    if (_openingBalanceCtrl.text.trim().isNotEmpty) {
+      fields.addEntries([
+        MapEntry(
+          'opening_balance',
+          double.tryParse(_openingBalanceCtrl.text.trim()).toString(),
+        ),
+      ]);
+    }
 
       if (_pickedLogo == null) {
         await ApiService.put(NetworkUrl.companyById(_company!.id), body: fields);

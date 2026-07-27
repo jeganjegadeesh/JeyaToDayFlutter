@@ -430,16 +430,18 @@ class _CashPaymentScreenState extends ConsumerState<CashPaymentScreen> {
                         style: TextStyle(color: scheme.outline),
                       ),
                     )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                      children: [
-                        for (final entry in grouped.entries) ...[
-                          dateGroupHeader(scheme, entry.key),
-                          for (int i = 0; i < entry.value.length; i++)
-                            _paymentCard(context, t, scheme, isAdmin, entry.value[i], _items.indexOf(entry.value[i])),
+                  : SafeArea(
+                    child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                        children: [
+                          for (final entry in grouped.entries) ...[
+                            dateGroupHeader(scheme, entry.key),
+                            for (int i = 0; i < entry.value.length; i++)
+                              _paymentCard(context, t, scheme, isAdmin, entry.value[i], _items.indexOf(entry.value[i])),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
+                  ),
             ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: _kAccentBlue,

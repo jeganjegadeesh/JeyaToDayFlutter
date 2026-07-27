@@ -318,9 +318,6 @@ class _StockHistoryPageState extends ConsumerState<StockHistoryPage> {
     final grouped = groupByDate<StockEntry>(_items, (e) => e.date, (d) => DateFormat('dd-MM-yyyy').format(d));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t.t('history')),
-      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: _kAccentBlue))
           : RefreshIndicator(
@@ -333,16 +330,18 @@ class _StockHistoryPageState extends ConsumerState<StockHistoryPage> {
                         style: TextStyle(color: scheme.outline),
                       ),
                     )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                      children: [
-                        for (final entry in grouped.entries) ...[
-                          dateGroupHeader(scheme, entry.key),
-                          for (int i = 0; i < entry.value.length; i++)
-                            _entryCard(context, t, scheme, isAdmin, entry.value[i], _items.indexOf(entry.value[i])),
+                  : SafeArea(
+                    child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                        children: [
+                          for (final entry in grouped.entries) ...[
+                            dateGroupHeader(scheme, entry.key),
+                            for (int i = 0; i < entry.value.length; i++)
+                              _entryCard(context, t, scheme, isAdmin, entry.value[i], _items.indexOf(entry.value[i])),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
+                  ),
             ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: _kAccentBlue,

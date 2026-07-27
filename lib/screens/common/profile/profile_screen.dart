@@ -281,126 +281,128 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 44,
-                  backgroundColor: scheme.primaryContainer,
-                  backgroundImage: avatarImage,
-                  child: avatarImage == null
-                      ? Text(
-                          user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: scheme.primary),
-                        )
-                      : null,
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _pickPhoto,
-                    child: CircleAvatar(
-                      radius: 15,
-                      backgroundColor: _kAccentBlue,
-                      child: const Icon(Icons.edit, size: 15, color: Colors.white),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 44,
+                    backgroundColor: scheme.primaryContainer,
+                    backgroundImage: avatarImage,
+                    child: avatarImage == null
+                        ? Text(
+                            user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: scheme.primary),
+                          )
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _pickPhoto,
+                      child: CircleAvatar(
+                        radius: 15,
+                        backgroundColor: _kAccentBlue,
+                        child: const Icon(Icons.edit, size: 15, color: Colors.white),
+                      ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: TextButton.icon(
+                onPressed: _pickPhoto,
+                icon: const Icon(Icons.image_outlined, size: 18),
+                label: Text(t.t('changeProfilePhoto')),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameCtrl,
+              decoration: InputDecoration(
+                labelText: t.t('name'),
+                prefixIcon: const Icon(Icons.person_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _phoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: t.t('phoneNumber'),
+                prefixIcon: const Icon(Icons.phone_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.t('accountType'), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      const SizedBox(height: 4),
+                      Text(user.type.toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: _kGreen.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle, size: 14, color: _kGreen),
+                      const SizedBox(width: 4),
+                      Text(verifiedLabel, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: _kGreen)),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          Center(
-            child: TextButton.icon(
-              onPressed: _pickPhoto,
-              icon: const Icon(Icons.image_outlined, size: 18),
-              label: Text(t.t('changeProfilePhoto')),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+              child: _saving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text(t.t('saveChanges')),
             ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _nameCtrl,
-            decoration: InputDecoration(
-              labelText: t.t('name'),
-              prefixIcon: const Icon(Icons.person_outline),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: _openChangePassword,
+              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+              icon: const Icon(Icons.lock_outline),
+              label: Text(t.t('changePassword')),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _phoneCtrl,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              labelText: t.t('phoneNumber'),
-              prefixIcon: const Icon(Icons.phone_outlined),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(t.t('accountType'), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-                    const SizedBox(height: 4),
-                    Text(user.type.toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                  ],
-                ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: () => ref.read(authProvider).logout(),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: const BorderSide(color: Colors.redAccent),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: _kGreen.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle, size: 14, color: _kGreen),
-                    const SizedBox(width: 4),
-                    Text(verifiedLabel, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: _kGreen)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: _saving ? null : _save,
-            style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-            child: _saving
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(t.t('saveChanges')),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: _openChangePassword,
-            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-            icon: const Icon(Icons.lock_outline),
-            label: Text(t.t('changePassword')),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: () => ref.read(authProvider).logout(),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: Colors.redAccent),
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: Text(t.t('logout'), style: const TextStyle(color: Colors.red)),
             ),
-            icon: const Icon(Icons.logout, color: Colors.red),
-            label: Text(t.t('logout'), style: const TextStyle(color: Colors.red)),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(child: _infoCard(scheme, Icons.calendar_today_outlined, t.t('memberSince'), memberSince)),
-              const SizedBox(width: 12),
-              Expanded(child: _infoCard(scheme, Icons.verified_user_outlined, t.t('accessLevel'), accessLabel)),
-            ],
-          ),
-        ],
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(child: _infoCard(scheme, Icons.calendar_today_outlined, t.t('memberSince'), memberSince)),
+                const SizedBox(width: 12),
+                Expanded(child: _infoCard(scheme, Icons.verified_user_outlined, t.t('accessLevel'), accessLabel)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

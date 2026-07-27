@@ -66,7 +66,7 @@ class _RetailerBillsScreenState extends State<RetailerBillsScreen> {
                         return ListTile(
                           leading: const Icon(Icons.receipt),
                           title: Text(DateFormat('dd-MM-yyyy').format(b.date)),
-                          trailing: Text('Rs. ${b.grandTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          trailing: Text('Rs. ${b.settledAmount > 0 ? b.settledAmount.toStringAsFixed(2) : b.grandTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                           onTap: () => _preview(b),
                         );
                       },

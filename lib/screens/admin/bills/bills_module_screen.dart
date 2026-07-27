@@ -16,25 +16,27 @@ class BillsModuleScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        body: Column(
-          children: [
-            TabBar(
-              indicatorColor: _kAccentBlue,
-              indicatorWeight: 3,
-              labelColor: _kAccentBlue,
-              unselectedLabelColor: scheme.onSurfaceVariant,
-              tabs: [
-                Tab(text: t.t('newBill'), icon: const Icon(Icons.add_card_outlined)),
-                Tab(text: t.t('history'), icon: const Icon(Icons.history)),
-              ],
-            ),
-            const Expanded(
-              child: TabBarView(children: [
-                BillGenerateScreen(),
-                BillHistoryScreen(),
-              ]),
-            ),
-          ],
+        body: SafeArea(
+          child: Column(
+            children: [
+              TabBar(
+                indicatorColor: _kAccentBlue,
+                indicatorWeight: 3,
+                labelColor: _kAccentBlue,
+                unselectedLabelColor: scheme.onSurfaceVariant,
+                tabs: [
+                  Tab(text: t.t('newBill'), icon: const Icon(Icons.add_card_outlined)),
+                  Tab(text: t.t('history'), icon: const Icon(Icons.history)),
+                ],
+              ),
+              const Expanded(
+                child: TabBarView(children: [
+                  BillGenerateScreen(),
+                  BillHistoryScreen(),
+                ]),
+              ),
+            ],
+          ),
         ),
       ),
     );

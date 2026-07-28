@@ -42,6 +42,7 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController.asset(widget.assetPath)
+      ..setVolume(0) // splash plays silently, no audio
       ..initialize().then((_) {
         setState(() {}); // refresh once the first frame is ready
         _controller.play();

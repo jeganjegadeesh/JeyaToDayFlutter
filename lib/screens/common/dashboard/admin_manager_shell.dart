@@ -17,6 +17,7 @@ import '../../admin/retailer_loans/retailer_loans_screen.dart';
 import '../../admin/company/company_screen.dart';
 import '../settings/settings_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../../config/api_config.dart';
 
 class AdminManagerShell extends ConsumerStatefulWidget {
   const AdminManagerShell({super.key});
@@ -175,16 +176,36 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+              color: Theme.of(context).colorScheme.primary,
+              child: Row(
                 children: [
-                  const Icon(Icons.icecream, color: Colors.white, size: 32),
-                  const SizedBox(height: 8),
-                  Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(user.type.toUpperCase(), style: const TextStyle(color: Colors.white70)),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white24,
+                    backgroundImage: user.profileImage != null
+                        ? NetworkImage('${ApiConfig.imageBaseUrl}/${user.profileImage!}')
+                        : null,
+                    child: user.profileImage == null
+                        ? Text(
+                            user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(user.type.toUpperCase(), style: const TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

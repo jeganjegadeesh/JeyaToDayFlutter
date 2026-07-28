@@ -32,6 +32,12 @@ class _CompanyScreenState extends State<CompanyScreen> {
   bool _loading = true;
   bool _saving = false;
 
+  // True once we know the backend won't accept changes to opening_balance
+  // (either because the company object told us so, or because a previous
+  // save attempt came back with the "locked" error). Once true, the field
+  // is disabled and never included in the save payload again.
+  bool _openingBalanceLocked = false;
+
   XFile? _pickedLogo;
 
   final _nameCtrl = TextEditingController();
@@ -50,12 +56,15 @@ class _CompanyScreenState extends State<CompanyScreen> {
     setState(() => _loading = true);
     try {
       final res = await ApiService.get(NetworkUrl.company);
+      print("COMPANY $res");
       _company = Company.fromJson(res);
       _nameCtrl.text = _company!.name;
       _gstCtrl.text = _company!.gstNumber ?? '';
       _addressCtrl.text = _company!.fullAddress ?? '';
       _contactCtrl.text = _company!.contactNumber ?? '';
       _openingBalanceCtrl.text = _company!.openingBalance.toString();
+
+      _openingBalanceLocked = _company!.openingBalanceLocked;
     } on ApiException catch (e) {
       if (mounted) showSnack(context, e.message, isError: true);
     } finally {
@@ -97,18 +106,16 @@ class _CompanyScreenState extends State<CompanyScreen> {
     if (result != null) setState(() => _pickedLogo = result);
   }
 
-  Future<void> _save() async {
-    final t = context.l10n;
-    setState(() => _saving = true);
-    try {
-    var fields = {
+  // Central place that builds the text-field payload, respecting the lock.
+  Map<String, String> _buildFields() {
+    final fields = {
       'name': _nameCtrl.text.trim(),
       'gst_number': _gstCtrl.text.trim(),
       'full_address': _addressCtrl.text.trim(),
       'contact_number': _contactCtrl.text.trim(),
     };
 
-    if (_openingBalanceCtrl.text.trim().isNotEmpty) {
+    if (!_openingBalanceLocked && _openingBalanceCtrl.text.trim().isNotEmpty) {
       fields.addEntries([
         MapEntry(
           'opening_balance',
@@ -117,27 +124,61 @@ class _CompanyScreenState extends State<CompanyScreen> {
       ]);
     }
 
-      if (_pickedLogo == null) {
-        await ApiService.put(NetworkUrl.companyById(_company!.id), body: fields);
-      } else {
-        // Multipart upload requires string fields + the file itself.
-        await ApiService.multipart(
-          NetworkUrl.companyById(_company!.id),
-          fields: fields.map((k, v) => MapEntry(k, '$v')),
-          fileField: 'logo',
-          filePath: _pickedLogo!.path,
-          method: 'PUT',
-        );
-      }
+    return fields;
+  }
+
+  bool _isOpeningBalanceLockedError(Object e) {
+    if (e is ApiException) {
+      return e.message.toLowerCase().contains('opening balance is locked');
+    }
+    return false;
+  }
+
+  Future<void> _save() async {
+    final t = context.l10n;
+    setState(() => _saving = true);
+    try {
+      await _attemptSave(_buildFields());
 
       if (mounted) showSnack(context, t.t('companySaved'));
       _pickedLogo = null;
       await _load();
       if (widget.onboarding) widget.onSaved?.call();
     } on ApiException catch (e) {
-      if (mounted) showSnack(context, e.message, isError: true);
+      if (_isOpeningBalanceLockedError(e)) {
+        setState(() => _openingBalanceLocked = true);
+        if (mounted) {
+          showSnack(context, e.message, isError: true);
+        }
+        try {
+          await _attemptSave(_buildFields());
+          if (mounted) showSnack(context, t.t('companySaved'));
+          _pickedLogo = null;
+          await _load();
+          if (widget.onboarding) widget.onSaved?.call();
+        } on ApiException catch (retryError) {
+          if (mounted) showSnack(context, retryError.message, isError: true);
+        }
+      } else {
+        if (mounted) showSnack(context, e.message, isError: true);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _attemptSave(Map<String, String> fields) async {
+    if (_pickedLogo == null) {
+      await ApiService.put(NetworkUrl.companyById(_company!.id), body: fields);
+    } else {
+      // Multipart upload requires string fields + the file itself.
+      await ApiService.multipart(
+        NetworkUrl.companyById(_company!.id),
+        fields: fields,
+        fileField: 'logo',
+        filePath: _pickedLogo!.path,
+        method: 'PUT',
+      );
     }
   }
 
@@ -233,9 +274,12 @@ class _CompanyScreenState extends State<CompanyScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _openingBalanceCtrl,
+                  enabled: !_openingBalanceLocked,
                   decoration: InputDecoration(
                     labelText: t.t('openingBalance'),
-                    helperText: t.t('openingBalanceHint'),
+                    helperText: _openingBalanceLocked
+                        ? t.t('openingBalanceLockedHint')
+                        : t.t('openingBalanceHint'),
                     border: const OutlineInputBorder(),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import '../../../config/api_config.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/auth_service.dart';
@@ -276,8 +277,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ImageProvider? avatarImage;
     if (_pickedPhoto != null) {
       avatarImage = FileImage(File(_pickedPhoto!.path));
-    } else if (user.profileImageUrl != null) {
-      avatarImage = NetworkImage(user.profileImageUrl!);
+    } else if (user.profileImage != null) {
+      avatarImage = NetworkImage('${ApiConfig.imageBaseUrl}/${user.profileImage!}');
     }
 
     return Scaffold(

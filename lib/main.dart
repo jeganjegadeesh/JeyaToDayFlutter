@@ -1,3 +1,4 @@
+import 'package:aj_project/video_splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,7 +78,8 @@ class AjApp extends ConsumerWidget {
           child: child!,
         );
       },
-      home: SplashScreen(nextScreenBuilder: (_) => const _RootRouter()),
+      home: const VideoSplashScreen(nextScreen: _RootRouter()),
+      // home: SplashScreen(nextScreenBuilder: (_) => const _RootRouter()),
     );
   }
 }

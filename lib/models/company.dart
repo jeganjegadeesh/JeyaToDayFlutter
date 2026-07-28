@@ -7,6 +7,7 @@ class Company {
   final String? contactNumber;
   final double openingBalance;
   final bool isSetupComplete;
+  final bool openingBalanceLocked;
 
   Company({
     required this.id,
@@ -17,6 +18,7 @@ class Company {
     this.contactNumber,
     required this.openingBalance,
     this.isSetupComplete = false,
+    this.openingBalanceLocked = false
   });
 
   factory Company.fromJson(Map<String, dynamic> json) => Company(
@@ -28,5 +30,6 @@ class Company {
         contactNumber: json['contact_number'],
         openingBalance: double.tryParse('${json['opening_balance'] ?? 0}') ?? 0,
         isSetupComplete: json['is_setup_complete'] == true || json['is_setup_complete'] == 1,
+        openingBalanceLocked: json['opening_balance_locked'] == true || json['opening_balance_locked'] == 1
       );
 }

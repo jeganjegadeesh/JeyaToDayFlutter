@@ -20,6 +20,22 @@ class NetworkUrl {
   static const String me = '/me';
   static const String profile = '/profile';
   static const String profilePassword = '/profile/password';
+  static const String forgotPassword = '/forgot-password';
+
+  // ---------------------------------------------------------------------
+  // Push notifications (FCM)
+  // ---------------------------------------------------------------------
+  static const String fcmToken = '/fcm-token';
+  static const String notifications = '/notifications';
+  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static String notificationRead(int id) => '/notifications/$id/read';
+  static const String notificationsReadAll = '/notifications/read-all';
+
+  // ---------------------------------------------------------------------
+  // Forgot-password requests (Admin only)
+  // ---------------------------------------------------------------------
+  static const String passwordResetRequests = '/password-reset-requests';
+  static String passwordResetRequestResolve(int id) => '/password-reset-requests/$id/resolve';
 
   // ---------------------------------------------------------------------
   // Dashboard

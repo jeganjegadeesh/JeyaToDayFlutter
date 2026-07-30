@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -166,7 +167,7 @@ class _ReceiptPaper extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.icecream_outlined, color: _kReceiptInk, size: 28),
+          Image.asset('assets/logo.png', height: 44, fit: BoxFit.contain),
           const SizedBox(height: 8),
           Text(
             (company?.name ?? '').toUpperCase(),
@@ -236,14 +237,21 @@ class _ReceiptPaper extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text(t.t('grandTotalStillOwed').toUpperCase(),
+                Text(t.t('grandTotalBillAmount').toUpperCase(),
                     style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _kReceiptInk)),
                 const SizedBox(height: 2),
-                Text(currency.format(bill.grandTotal),
+                Text(currency.format(bill.finalTotal),
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _kReceiptInk)),
               ],
             ),
           ),
+          if (bill.grandTotal > 0.005) ...[
+            const SizedBox(height: 6),
+            _totalRow(t.t('balanceDueTx'), currency.format(bill.grandTotal), bold: true),
+          ] else if (bill.settledAmount > 0.005) ...[
+            const SizedBox(height: 6),
+            _totalRow(t.t('settledLabel'), currency.format(bill.settledAmount), bold: true),
+          ],
         ],
       ),
     );
@@ -318,6 +326,8 @@ Future<Uint8List> _buildReceiptPdf(Bill bill, Company? company, PdfPageFormat fo
   final doc = pw.Document();
   final currency = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ', decimalDigits: 2);
   final ink = PdfColor.fromInt(0xFF1E2430);
+  final logoBytes = await rootBundle.load('assets/logo.png');
+  final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
   pw.Widget dashed() => pw.Container(
         height: 1,
@@ -366,6 +376,8 @@ Future<Uint8List> _buildReceiptPdf(Bill bill, Company? company, PdfPageFormat fo
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
           children: [
+            pw.Center(child: pw.Image(logoImage, height: 50)),
+            pw.SizedBox(height: 6),
             pw.Center(
               child: pw.Text((company?.name ?? '').toUpperCase(),
                   style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: ink)),
@@ -427,12 +439,19 @@ Future<Uint8List> _buildReceiptPdf(Bill bill, Company? company, PdfPageFormat fo
               decoration: pw.BoxDecoration(border: pw.Border.all(color: ink, width: 1.2), borderRadius: pw.BorderRadius.circular(4)),
               child: pw.Column(
                 children: [
-                  pw.Text('GRAND TOTAL (STILL OWED)', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: ink)),
+                  pw.Text('GRAND TOTAL (BILL AMOUNT)', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: ink)),
                   pw.SizedBox(height: 2),
-                  pw.Text(currency.format(bill.grandTotal), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: ink)),
+                  pw.Text(currency.format(bill.finalTotal), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: ink)),
                 ],
               ),
             ),
+            if (bill.grandTotal > 0.005) ...[
+              pw.SizedBox(height: 6),
+              totalRow('Balance Due', currency.format(bill.grandTotal), bold: true),
+            ] else if (bill.settledAmount > 0.005) ...[
+              pw.SizedBox(height: 6),
+              totalRow('Settled', currency.format(bill.settledAmount), bold: true),
+            ],
           ],
         );
       },

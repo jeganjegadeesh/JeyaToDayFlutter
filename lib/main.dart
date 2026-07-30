@@ -1,7 +1,11 @@
 import 'package:aj_project/video_splash.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'config/app_navigator.dart';
+import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/auth_provider.dart';
 import 'providers/font_size_provider.dart';
@@ -9,9 +13,17 @@ import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/common/dashboard/home_shell.dart';
-import 'screens/splash/splash_screen.dart';
+import 'services/push_notification_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Must be registered before runApp() so pushes are handled even if this
+  // isolate was just cold-started by a background/terminated notification.
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await PushNotificationService.instance.init();
+
   runApp(const ProviderScope(child: AjApp()));
 }
 
@@ -49,6 +61,7 @@ class AjApp extends ConsumerWidget {
     });
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'AJ Project',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

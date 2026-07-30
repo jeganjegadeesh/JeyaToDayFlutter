@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../config/network_url.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/bill.dart';
+import '../../../models/company.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../services/bill_service.dart';
 import '../../../services/api_service.dart';
-import '../../../widgets/bill_preview_card.dart';
+import '../../../widgets/bill_receipt_dialog.dart';
 import '../../../widgets/date_group_header.dart';
 import '../../../widgets/dialogs.dart';
 import '../../../widgets/settle_bill_dialog.dart';
@@ -36,11 +38,25 @@ class BillHistoryScreen extends ConsumerStatefulWidget {
 class _BillHistoryScreenState extends ConsumerState<BillHistoryScreen> {
   List<Bill> _items = [];
   bool _loading = true;
+  Company? _company;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _loadCompany();
+  }
+
+  /// Best-effort load of company details for the receipt header. A missing
+  /// company profile shouldn't block viewing bill history, so failures are
+  /// silent — the receipt still renders fine without them.
+  Future<void> _loadCompany() async {
+    try {
+      final res = await ApiService.get(NetworkUrl.company);
+      if (mounted) setState(() => _company = Company.fromJson(res));
+    } catch (_) {
+      // Ignore — receipt just shows without company header details.
+    }
   }
 
   Future<void> _load() async {
@@ -61,36 +77,14 @@ class _BillHistoryScreenState extends ConsumerState<BillHistoryScreen> {
   Map<String, List<Bill>> _groupByDate(List<Bill> bills) =>
       groupByDate<Bill>(bills, (b) => b.date, (d) => DateFormat('dd-MM-yyyy').format(d));
 
-  void _preview(Bill b) {
-    final t = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: SizedBox(
-          width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(child: BillPreviewCard(bill: b)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text(t.t('close'), style: TextStyle(color: scheme.onSurfaceVariant)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  Future<void> _preview(Bill b) async {
+    final updated = await showBillReceiptDialog(context, bill: b, company: _company);
+    if (updated != null && mounted) {
+      setState(() {
+        final idx = _items.indexWhere((x) => x.id == updated.id);
+        if (idx != -1) _items[idx] = updated;
+      });
+    }
   }
 
   Future<void> _delete(Bill b) async {

@@ -1,22 +1,3 @@
-// video_splash_screen.dart
-//
-// Plays a video as the app's splash screen, then navigates to your home page.
-// Your video (10s, 1280x720, h264/aac) is at: assets/videos/splash.mp4
-//
-// SETUP:
-// 1) Add the video_player package:
-//      flutter pub add video_player
-//
-// 2) Add the asset to pubspec.yaml:
-//      flutter:
-//        assets:
-//          - assets/videos/splash.mp4
-//
-// 3) Put splash.mp4 in <project_root>/assets/videos/
-//
-// 4) Use VideoSplashScreen as your app's home in MaterialApp, e.g.:
-//      MaterialApp(home: VideoSplashScreen(nextScreen: const HomePage()))
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -88,10 +69,7 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
       body: _controller.value.isInitialized
           ? SizedBox.expand(
               child: FittedBox(
-                // Video is now 1080x1920 (portrait), matching typical phone
-                // screens, so BoxFit.contain shows it in full with no crop/zoom.
-                // The video's own black background blends with any minor bars.
-                fit: BoxFit.contain,
+                fit: BoxFit.cover, // 👈 changed from BoxFit.contain
                 child: SizedBox(
                   width: _controller.value.size.width,
                   height: _controller.value.size.height,

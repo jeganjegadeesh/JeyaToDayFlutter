@@ -41,6 +41,17 @@ class AuthService {
     }
   }
 
+  /// Sends a forgot-password request to the admin using the user's phone
+  /// number. Backend enforces a max of one request per phone number per
+  /// day; on the 429 case ApiException.message already contains a friendly
+  /// explanation to show the user as-is.
+  static Future<String> forgotPassword(String phoneNumber) async {
+    final res = await ApiService.post(NetworkUrl.forgotPassword, body: {
+      'phone_number': phoneNumber,
+    });
+    return res['message'] as String? ?? 'Request sent.';
+  }
+
   static Future<void> changePassword(String currentPassword, String newPassword) async {
     await ApiService.put(NetworkUrl.profilePassword, body: {
       'current_password': currentPassword,

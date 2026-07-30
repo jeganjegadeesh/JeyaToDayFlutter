@@ -15,9 +15,12 @@ import '../../admin/raw_materials/raw_materials_screen.dart';
 import '../../admin/expenses/expenses_screen.dart';
 import '../../admin/retailer_loans/retailer_loans_screen.dart';
 import '../../admin/company/company_screen.dart';
+import '../../admin/notifications/notifications_screen.dart';
+import '../../admin/notifications/password_reset_requests_screen.dart';
 import '../settings/settings_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../../config/api_config.dart';
+import '../../../services/notification_api_service.dart';
 
 class AdminManagerShell extends ConsumerStatefulWidget {
   const AdminManagerShell({super.key});
@@ -47,8 +50,26 @@ class _NavItem {
 
 class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
   int _index = 0;
-  bool _creationsOpen = false;
-  bool _actionsOpen = false;
+  bool _creationsOpen = true;
+  bool _actionsOpen = true;
+  int _unreadCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshUnreadCount());
+  }
+
+  /// Admin-only endpoint - silently no-ops (leaves the badge at 0) for
+  /// managers/retailers, who never see the Notifications drawer item anyway.
+  Future<void> _refreshUnreadCount() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || !user.isAdmin) return;
+    try {
+      final count = await NotificationApiService.unreadCount();
+      if (mounted) setState(() => _unreadCount = count);
+    } catch (_) {}
+  }
 
   // The first four entries are always visible and drive the bottom
   // NavigationBar (Dashboard, Reports, Profile, Settings), matching their
@@ -76,6 +97,8 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
     _NavItem('cashPayment', Icons.currency_rupee, () => const CashPaymentScreen(), group: 'actions'),
     _NavItem('billGenerate', Icons.receipt_long, () => const BillsModuleScreen(), group: 'actions'),
     _NavItem('expenses', Icons.shopping_bag_outlined, () => const ExpensesScreen()),
+    _NavItem('notifications', Icons.notifications_outlined, () => const NotificationsScreen(), adminOnly: true),
+    _NavItem('passwordResetRequests', Icons.lock_reset, () => const PasswordResetRequestsScreen(), adminOnly: true),
   ];
 
   @override
@@ -100,14 +123,91 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
     void selectFromDrawer(int i) {
       select(i);
       Navigator.pop(context);
+      _refreshUnreadCount();
     }
 
     Widget navTile(int i) {
-      return ListTile(
-        leading: Icon(visibleItems[i].icon),
-        title: Text(t.t(visibleItems[i].labelKey)),
-        selected: _index == i,
-        onTap: () => selectFromDrawer(i),
+      final selected = _index == i;
+      final isNotifications = visibleItems[i].labelKey == 'notifications';
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Material(
+          color: selected ? Colors.white.withValues(alpha: 0.18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => selectFromDrawer(i),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Row(
+                children: [
+                  if (selected)
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: Icon(visibleItems[i].selectedIcon ?? visibleItems[i].icon, size: 18, color: scheme.primary),
+                    )
+                  else
+                    Icon(visibleItems[i].icon, size: 20, color: Colors.white.withValues(alpha: 0.9)),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      t.t(visibleItems[i].labelKey),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                  ),
+                  if (isNotifications && _unreadCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        _unreadCount > 99 ? '99+' : '$_unreadCount',
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Group header row: "CREATIONS" / "ACTIONS" label + expand/collapse
+    // chevron, white text on the gradient background.
+    Widget groupHeader({required String label, required bool expanded, required VoidCallback onTap}) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              Icon(
+                expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -121,35 +221,35 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
     final creationsSelected = creationsIdx.contains(_index);
     final actionsSelected = actionsIdx.contains(_index);
 
-    Widget creationsTile() => Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            key: const PageStorageKey('drawer_creations'),
-            initiallyExpanded: _creationsOpen || creationsSelected,
-            onExpansionChanged: (open) => setState(() => _creationsOpen = open),
-            leading: Icon(Icons.add_box_outlined, color: creationsSelected ? scheme.primary : null),
-            title: Text(
-              t.t('creations'),
-              style: TextStyle(fontWeight: FontWeight.w600, color: creationsSelected ? scheme.primary : null),
-            ),
-            children: [for (final i in creationsIdx) navTile(i)],
+    Widget creationsSection() {
+      final expanded = _creationsOpen || creationsSelected;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          groupHeader(
+            label: t.t('creations'),
+            expanded: expanded,
+            onTap: () => setState(() => _creationsOpen = !expanded),
           ),
-        );
+          if (expanded) for (final i in creationsIdx) navTile(i),
+        ],
+      );
+    }
 
-    Widget actionsTile() => Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            key: const PageStorageKey('drawer_actions'),
-            initiallyExpanded: _actionsOpen || actionsSelected,
-            onExpansionChanged: (open) => setState(() => _actionsOpen = open),
-            leading: Icon(Icons.bolt_outlined, color: actionsSelected ? scheme.primary : null),
-            title: Text(
-              t.t('actionsMenu'),
-              style: TextStyle(fontWeight: FontWeight.w600, color: actionsSelected ? scheme.primary : null),
-            ),
-            children: [for (final i in actionsIdx) navTile(i)],
+    Widget actionsSection() {
+      final expanded = _actionsOpen || actionsSelected;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          groupHeader(
+            label: t.t('actionsMenu'),
+            expanded: expanded,
+            onTap: () => setState(() => _actionsOpen = !expanded),
           ),
-        );
+          if (expanded) for (final i in actionsIdx) navTile(i),
+        ],
+      );
+    }
 
     // Walk the list in order, skipping bottom-nav items (shown below
     // instead), rendering other flat rows as plain tiles, and swapping in
@@ -162,7 +262,15 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
       if (item.group == null) {
         drawerRows.add(navTile(i));
       } else if (renderedGroups.add(item.group!)) {
-        drawerRows.add(item.group == 'creations' ? creationsTile() : actionsTile());
+        if (item.group == 'actions') {
+          drawerRows.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Divider(color: Colors.white.withValues(alpha: 0.25), height: 1, thickness: 1),
+            ),
+          );
+        }
+        drawerRows.add(item.group == 'creations' ? creationsSection() : actionsSection());
       }
     }
 
@@ -171,46 +279,121 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
     final bottomNavSelected = _index < 4 ? _index : 0;
 
     return Scaffold(
-      appBar: AppBar(title: Text(t.t(visibleItems[_index].labelKey))),
+      appBar: _index == 0 ? null : AppBar(title: Text(t.t(visibleItems[_index].labelKey))),
+      onDrawerChanged: (isOpened) {
+        if (isOpened) _refreshUnreadCount();
+      },
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-              color: Theme.of(context).colorScheme.primary,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.white24,
-                    backgroundImage: user.profileImage != null
-                        ? NetworkImage('${ApiConfig.imageBaseUrl}/${user.profileImage!}')
-                        : null,
-                    child: user.profileImage == null
-                        ? Text(
-                            user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                          )
-                        : null,
+        width: MediaQuery.of(context).size.width * 0.82,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF13245C), Color(0xFF3B6FE0)],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 8, 16),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: Colors.white24,
+                        backgroundImage: user.profileImage != null
+                            ? NetworkImage('${ApiConfig.imageBaseUrl}/${user.profileImage!}')
+                            : null,
+                        child: user.profileImage == null
+                            ? Text(
+                                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(user.name,
+                                style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            Text(
+                              user.type.toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, color: Colors.white),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text(user.type.toUpperCase(), style: const TextStyle(color: Colors.white70)),
-                      ],
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: drawerRows,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Material(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        final settingsIdx = visibleItems.indexWhere((i) => i.labelKey == 'settings');
+                        if (settingsIdx != -1) selectFromDrawer(settingsIdx);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.shield_outlined, color: Colors.white, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('v 1.0.0',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13.5)),
+                                  Text(t.t('appTitle'),
+                                      style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.7)),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            ...drawerRows,
-          ],
+          ),
         ),
       ),
       body: visibleItems[_index].builder(),

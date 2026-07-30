@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../services/report_service.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/dialogs.dart';
@@ -19,14 +21,14 @@ const _kAmber = Color(0xFFF59E0B);
 const _kGreen = Color(0xFF10B981);
 const _kRed = Color(0xFFEF4444);
 
-class AdminDashboardScreen extends StatefulWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   String _period = 'weekly';
   Map<String, dynamic>? _data;
   bool _loading = true;
@@ -54,61 +56,144 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     final t = context.l10n;
     final scheme = Theme.of(context).colorScheme;
+    final user = ref.watch(authProvider).user;
 
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        children: [
-          Text(t.t('quickActions'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.5,
-            children: [
-              _quickAction(context, Icons.north_east, t.t('giveStock'), _kAccentBlue, const GiveStockScreen()),
-              _quickAction(context, Icons.south_west, t.t('returnStock'), _kAmber, const ReturnStockScreen()),
-              _quickAction(context, Icons.currency_rupee, t.t('cashPayment'), _kGreen, const CashPaymentScreen()),
-              _quickAction(context, Icons.receipt_long_outlined, t.t('billGenerate'), _kAccentBlue, const BillsModuleScreen()),
+    return SafeArea(
+      bottom: false,
+      child: RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            _header(context, t, user?.name ?? ''),
+            const SizedBox(height: 24),
+            Text(t.t('quickActions'),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: [
+                _quickAction(context, Icons.north_east, t.t('giveStock'), _kAccentBlue, const GiveStockScreen()),
+                _quickAction(context, Icons.south_west, t.t('returnStock'), _kAmber, const ReturnStockScreen()),
+                _quickAction(context, Icons.currency_rupee, t.t('cashPayment'), _kGreen, const CashPaymentScreen()),
+                _quickAction(context, Icons.receipt_long_outlined, t.t('billGenerate'), _kAccentBlue, const BillsModuleScreen()),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _salesAnalysisCard(context, t, scheme),
+            const SizedBox(height: 16),
+            if (_data != null) ...[
+              _statCard(
+                context,
+                label: t.t('totalRetailers'),
+                value: '${_data!['total_retailers'] ?? 0}',
+                icon: Icons.storefront_outlined,
+                color: _kAccentBlue,
+              ),
+              const SizedBox(height: 12),
+              _statCard(
+                context,
+                label: t.t('billsThisMonth'),
+                value: '${_data!['total_bills_this_month'] ?? 0}',
+                icon: Icons.receipt_long_outlined,
+                color: _kGreen,
+              ),
+              const SizedBox(height: 12),
+              _statCard(
+                context,
+                label: t.t('pendingLoans'),
+                value: _currency.format(double.tryParse('${_data!['pending_loans'] ?? 0}') ?? 0),
+                icon: Icons.account_balance_wallet_outlined,
+                color: _kRed,
+              ),
             ],
-          ),
-          const SizedBox(height: 24),
-          _salesAnalysisCard(context, t, scheme),
-          const SizedBox(height: 16),
-          if (_data != null) ...[
-            _statCard(
-              context,
-              label: t.t('totalRetailers'),
-              value: '${_data!['total_retailers'] ?? 0}',
-              icon: Icons.storefront_outlined,
-              color: _kAccentBlue,
+            const SizedBox(height: 24),
+            _recentTransactionsSection(context, t, scheme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------
+  // Greeting header: menu + notification icons, "Good Morning" + the
+  // signed-in user's name, the app tagline, and the brand logo — mirrors
+  // the light "Modern & Minimal" reference design.
+  // ---------------------------------------------------------------------
+  Widget _header(BuildContext context, AppLocalizations t, String userName) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => Scaffold.of(context).openDrawer(),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.menu, size: 26),
+              ),
             ),
-            const SizedBox(height: 12),
-            _statCard(
-              context,
-              label: t.t('billsThisMonth'),
-              value: '${_data!['total_bills_this_month'] ?? 0}',
-              icon: Icons.receipt_long_outlined,
-              color: _kGreen,
-            ),
-            const SizedBox(height: 12),
-            _statCard(
-              context,
-              label: t.t('pendingLoans'),
-              value: _currency.format(double.tryParse('${_data!['pending_loans'] ?? 0}') ?? 0),
-              icon: Icons.account_balance_wallet_outlined,
-              color: _kRed,
+            const Spacer(),
+            InkWell(
+              borderRadius: BorderRadius.circular(24),
+              onTap: () => showSnack(context, t.t('featureComingSoon')),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: scheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+                  ],
+                ),
+                child: const Icon(Icons.notifications_none_rounded, size: 22),
+              ),
             ),
           ],
-          const SizedBox(height: 24),
-          _recentTransactionsSection(context, t, scheme),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${t.t('goodMorning')} 👋',
+                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    userName.isNotEmpty ? userName : t.t('appTitle'),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    t.t('appTagline'),
+                    style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Image.asset(
+              'assets/logo.png',
+              width: 76,
+              height: 76,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
+      ],
     );
   }
 

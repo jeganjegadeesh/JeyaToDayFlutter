@@ -21,6 +21,13 @@ class ReportsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 20),
+            child: Text(
+              t.t('reports'),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w500),
+            ),
+          ),
           _ReportMenuTile(
             icon: Icons.trending_up,
             color: _kAccentBlue,

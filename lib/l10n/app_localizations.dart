@@ -21,6 +21,7 @@ class AppLocalizations {
   static const _en = <String, String>{
     'appTitle': 'AJ Project',
     'appTagline': 'Retail Ice Cream Distribution Management',
+    'goodMorning': 'Good Morning',
     'login': 'Login',
     'mobileNumber': 'Mobile Number',
     'password': 'Password',
@@ -38,6 +39,8 @@ class AppLocalizations {
     'expenses': 'Expenses',
     'retailerLoans': 'Retailer Loans',
     'companySetup': 'Company Setup',
+    'notifications': 'Notifications',
+    'passwordResetRequests': 'Password Reset Requests',
     'settings': 'Settings',
     'profile': 'Profile',
     'theme': 'Theme',
@@ -56,6 +59,8 @@ class AppLocalizations {
     'required': 'Required',
     'defaultPasswordHint': 'Default password for new accounts is 123456',
     'connectionError': 'Unable to connect. Check your network / server URL.',
+    'forgotPassword': 'Forgot Password?',
+    'featureComingSoon': 'This feature is coming soon',
     'quickActions': 'Quick Actions',
     'creations': 'Creations',
     'actionsMenu': 'Actions',
@@ -328,11 +333,13 @@ class AppLocalizations {
     'customer': 'Customer',
     'billNo': 'Bill No',
     'grandTotalStillOwed': 'Grand Total (Still Owed)',
+    'grandTotalBillAmount': 'Grand Total (Bill Amount)',
   };
 
   static const _ta = <String, String>{
     'appTitle': 'ஏஜே ப்ராஜெக்ட்',
     'appTagline': 'சில்லறை ஐஸ்கிரீம் விநியோக மேலாண்மை',
+    'goodMorning': 'காலை வணக்கம்',
     'login': 'உள்நுழைய',
     'mobileNumber': 'மொபைல் எண்',
     'password': 'கடவுச்சொல்',
@@ -350,6 +357,8 @@ class AppLocalizations {
     'expenses': 'செலவுகள்',
     'retailerLoans': 'விற்பனையாளர் கடன்கள்',
     'companySetup': 'நிறுவன அமைப்பு',
+    'notifications': 'அறிவிப்புகள்',
+    'passwordResetRequests': 'கடவுச்சொல் மீட்டமைப்பு கோரிக்கைகள்',
     'settings': 'அமைப்புகள்',
     'profile': 'சுயவிவரம்',
     'theme': 'தீம்',
@@ -367,6 +376,8 @@ class AppLocalizations {
     'bills': 'பில்கள்',
     'required': 'அவசியம்',
     'defaultPasswordHint': 'புதிய கணக்குகளுக்கான இயல்புநிலை கடவுச்சொல் 123456',
+    'forgotPassword': 'கடவுச்சொல் மறந்துவிட்டதா?',
+    'featureComingSoon': 'இந்த அம்சம் விரைவில் வரும்',
     'connectionError': 'இணைக்க முடியவில்லை. உங்கள் நெட்வொர்க் / சர்வர் URL ஐ சரிபார்க்கவும்.',
     'quickActions': 'விரைவு செயல்கள்',
     'creations': 'உருவாக்கங்கள்',
@@ -640,6 +651,7 @@ class AppLocalizations {
     'customer': 'வாடிக்கையாளர்',
     'billNo': 'பில் எண்',
     'grandTotalStillOwed': 'மொத்த தொகை (நிலுவை)',
+    'grandTotalBillAmount': 'மொத்த தொகை (பில் தொகை)',
   };
 
   Map<String, String> get _dict => locale.languageCode == 'ta' ? _ta : _en;

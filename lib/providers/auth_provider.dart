@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
+import '../services/push_notification_service.dart';
 
 /// Holds the current signed-in user and session-loading state.
 ///
@@ -23,11 +24,21 @@ class AuthProvider extends ChangeNotifier {
     _user = await AuthService.restoreSession();
     _loading = false;
     notifyListeners();
+    if (_user != null) _syncPushNotifications();
   }
 
   Future<void> login(String phoneNumber, String password) async {
     _user = await AuthService.login(phoneNumber, password);
     notifyListeners();
+    _syncPushNotifications();
+  }
+
+  /// Links this device's FCM token to the signed-in account and refreshes
+  /// the app-icon badge to match the server's unread notification count.
+  /// Fire-and-forget: failures here shouldn't block login/session restore.
+  void _syncPushNotifications() {
+    PushNotificationService.instance.registerToken();
+    PushNotificationService.instance.refreshBadge();
   }
 
   /// Re-fetches the current user from the server and replaces the cached
@@ -45,6 +56,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await PushNotificationService.instance.unregisterToken();
     await AuthService.logout();
     _user = null;
     notifyListeners();

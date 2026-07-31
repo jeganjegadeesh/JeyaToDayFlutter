@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/password_reset_request_item.dart';
 import '../../../services/api_service.dart';
 import '../../../services/password_reset_request_service.dart';
@@ -38,10 +39,11 @@ class _PasswordResetRequestsScreenState extends State<PasswordResetRequestsScree
   }
 
   Future<void> _resolve(PasswordResetRequestItem item) async {
+    final t = context.l10n;
     final ok = await confirmDialog(
       context,
-      title: 'Reset password?',
-      message: 'Reset ${item.userName ?? item.phoneNumber}\'s password back to the default password?',
+      title: t.t('resetPasswordTitle'),
+      message: t.t('resetPasswordConfirmMessage').replaceAll('{name}', item.userName ?? item.phoneNumber),
     );
     if (!ok) return;
     try {
@@ -55,9 +57,10 @@ class _PasswordResetRequestsScreenState extends State<PasswordResetRequestsScree
 
   @override
   Widget build(BuildContext context) {
+    final t = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Password Reset Requests'),
+        title: Text(t.t('passwordResetRequests')),
         actions: [
           PopupMenuButton<String?>(
             initialValue: _statusFilter,
@@ -65,10 +68,10 @@ class _PasswordResetRequestsScreenState extends State<PasswordResetRequestsScree
               setState(() => _statusFilter = v);
               _load();
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'pending', child: Text('Pending')),
-              PopupMenuItem(value: 'resolved', child: Text('Resolved')),
-              PopupMenuItem(value: null, child: Text('All')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'pending', child: Text(t.t('pending'))),
+              PopupMenuItem(value: 'resolved', child: Text(t.t('resolved'))),
+              PopupMenuItem(value: null, child: Text(t.t('all'))),
             ],
             icon: const Icon(Icons.filter_list),
           ),
@@ -80,9 +83,9 @@ class _PasswordResetRequestsScreenState extends State<PasswordResetRequestsScree
               onRefresh: _load,
               child: _items.isEmpty
                   ? ListView(
-                      children: const [
-                        SizedBox(height: 120),
-                        Center(child: Text('No requests here')),
+                      children: [
+                        const SizedBox(height: 120),
+                        Center(child: Text(t.t('noRequestsHere'))),
                       ],
                     )
                   : ListView.separated(
@@ -104,15 +107,15 @@ class _PasswordResetRequestsScreenState extends State<PasswordResetRequestsScree
                             title: Text(item.userName ?? item.phoneNumber),
                             subtitle: Text(
                               '${item.phoneNumber}${item.userType != null ? ' · ${item.userType}' : ''}\n'
-                              'Requested ${DateFormat('dd-MM-yyyy hh:mm a').format(item.requestedAt)}',
+                              '${t.t('requestedOn')} ${DateFormat('dd-MM-yyyy hh:mm a').format(item.requestedAt)}',
                             ),
                             isThreeLine: true,
                             trailing: item.isPending
                                 ? FilledButton(
                                     onPressed: () => _resolve(item),
-                                    child: const Text('Reset'),
+                                    child: Text(t.t('reset')),
                                   )
-                                : const Chip(label: Text('Resolved')),
+                                : Chip(label: Text(t.t('resolved'))),
                           ),
                         );
                       },

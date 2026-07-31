@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -10,7 +11,9 @@ import '../models/bill.dart';
 import '../models/company.dart';
 import '../services/api_service.dart';
 import '../services/bill_service.dart';
+import '../services/bluetooth_printer_service.dart';
 import 'dialogs.dart';
+import 'printer_picker_dialog.dart';
 
 const _kAccentBlue = Color(0xFF3B82F6);
 const _kReceiptCream = Color(0xFFF7F6EF);
@@ -34,6 +37,13 @@ Future<Bill?> showBillReceiptDialog(
   bool busy = false;
   Bill current = bill;
 
+  // Check (and silently try to restore) the Bluetooth printer connection
+  // right away, so the dialog opens already knowing whether to show the
+  // Print button or the Connect Printer button.
+  final container = ProviderScope.containerOf(context, listen: false);
+  await container.read(printerConnectionProvider.notifier).refresh();
+  if (!context.mounted) return null;
+
   return showDialog<Bill?>(
     context: context,
     barrierDismissible: false,
@@ -43,6 +53,28 @@ Future<Bill?> showBillReceiptDialog(
         final hasOutstanding = current.grandTotal > 0.005;
 
         Future<void> onPrint() async {
+          setDialogState(() => busy = true);
+          try {
+            if (hasOutstanding && settleInFull) {
+              current = await BillService.settle(current.id!, current.grandTotal);
+              setDialogState(() {});
+            }
+            final printed = await container.read(printerConnectionProvider.notifier).printBill(current, company);
+            if (!printed) {
+              setDialogState(() => busy = false);
+              if (ctx.mounted) showSnack(ctx, t.t('printFailed'), isError: true);
+              return;
+            }
+            if (ctx.mounted) Navigator.pop(ctx, current);
+          } on ApiException catch (e) {
+            setDialogState(() => busy = false);
+            if (ctx.mounted) showSnack(ctx, e.message, isError: true);
+          } catch (_) {
+            setDialogState(() => busy = false);
+          }
+        }
+
+        Future<void> onPdfPrint() async {
           setDialogState(() => busy = true);
           try {
             if (hasOutstanding && settleInFull) {
@@ -59,6 +91,11 @@ Future<Bill?> showBillReceiptDialog(
           } catch (_) {
             setDialogState(() => busy = false);
           }
+        }
+
+        Future<void> onConnectPrinter() async {
+          final connected = await showPrinterPickerDialog(ctx);
+          if (connected) setDialogState(() {});
         }
 
         return Dialog(
@@ -87,54 +124,112 @@ Future<Bill?> showBillReceiptDialog(
                         top: BorderSide(color: Theme.of(ctx).colorScheme.outlineVariant.withValues(alpha: 0.4)),
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        if (hasOutstanding)
-                          CheckboxListTile(
-                            value: settleInFull,
-                            onChanged: busy ? null : (v) => setDialogState(() => settleInFull = v ?? false),
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            dense: true,
-                            activeColor: _kAccentBlue,
-                            title: Text(t.t('settleInFull'), style: const TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: Text('${t.t('outstandingAmount')}: Rs. ${current.grandTotal.toStringAsFixed(2)}'),
-                          ),
-                        const SizedBox(height: 4),
-                        Row(
+                    child: Consumer(
+                      builder: (consumerCtx, ref, _) {
+                        final printerState = ref.watch(printerConnectionProvider);
+                        final printerReady = printerState.connected;
+
+                        return Column(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: busy ? null : () => Navigator.pop(ctx, null),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                child: Text(t.t('cancel')),
+                            if (hasOutstanding)
+                              CheckboxListTile(
+                                value: settleInFull,
+                                onChanged: busy ? null : (v) => setDialogState(() => settleInFull = v ?? false),
+                                contentPadding: EdgeInsets.zero,
+                                controlAffinity: ListTileControlAffinity.leading,
+                                dense: true,
+                                activeColor: _kAccentBlue,
+                                title: Text(t.t('settleInFull'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                                subtitle: Text('${t.t('outstandingAmount')}: Rs. ${current.grandTotal.toStringAsFixed(2)}'),
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    printerState.checking
+                                        ? Icons.bluetooth_searching
+                                        : printerReady
+                                            ? Icons.bluetooth_connected
+                                            : Icons.bluetooth_disabled,
+                                    size: 16,
+                                    color: printerReady ? Colors.green.shade600 : Theme.of(ctx).colorScheme.outline,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      printerState.checking
+                                          ? t.t('checkingPrinter')
+                                          : printerReady
+                                              ? '${t.t('connectedTo')}: ${printerState.deviceName ?? ''}'
+                                              : t.t('notConnectedToPrinter'),
+                                      style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: FilledButton.icon(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _kAccentBlue,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: busy ? null : () => Navigator.pop(ctx, null),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: Text(t.t('cancel')),
+                                  ),
                                 ),
-                                onPressed: busy ? null : onPrint,
-                                icon: busy
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                      )
-                                    : const Icon(Icons.print_outlined),
-                                label: Text(busy ? t.t('printing') : t.t('print')),
-                              ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: printerReady
+                                      ? FilledButton.icon(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: _kAccentBlue,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          ),
+                                          onPressed: busy ? null : onPrint,
+                                          icon: busy
+                                              ? const SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                                )
+                                              : const Icon(Icons.print_outlined),
+                                          label: Text(busy ? t.t('printing') : t.t('print')),
+                                        )
+                                      : FilledButton.icon(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: _kAccentBlue,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          ),
+                                          onPressed: (busy || printerState.checking) ? null : onConnectPrinter,
+                                          icon: const Icon(Icons.bluetooth),
+                                          label: Text(t.t('connectPrinter')),
+                                        ),
+                                ),
+                              ],
                             ),
+                            if (printerReady) ...[
+                              const SizedBox(height: 4),
+                              TextButton(
+                                onPressed: busy ? null : onPdfPrint,
+                                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 32)),
+                                child: Text(
+                                  t.t('printAsPdfInstead'),
+                                  style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+                                ),
+                              ),
+                            ],
                           ],
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ],

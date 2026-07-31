@@ -26,6 +26,12 @@ dependencies:
   # PDF preview / printing for bills
   printing: ^5.13.1
   pdf: ^3.11.0
+  # Bluetooth thermal receipt printer (portable ESC/POS printer support)
+  # Pinned to 1.2.1: 1.2.2+ requires Flutter SDK >=3.44.0 (Swift Package
+  # Manager migration for iOS/macOS). Bump this once the project's Flutter
+  # SDK is upgraded to 3.44+.
+  print_bluetooth_thermal: 1.2.1
+  esc_pos_utils_plus: ^2.0.4
   url_launcher: ^6.3.0
   video_player: ^2.11.1
   firebase_core: ^4.11.0

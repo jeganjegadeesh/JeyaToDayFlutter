@@ -52,24 +52,12 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
   int _index = 0;
   bool _creationsOpen = true;
   bool _actionsOpen = true;
-  int _unreadCount = 0;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshUnreadCount());
   }
 
-  /// Admin-only endpoint - silently no-ops (leaves the badge at 0) for
-  /// managers/retailers, who never see the Notifications drawer item anyway.
-  Future<void> _refreshUnreadCount() async {
-    final user = ref.read(authProvider).user;
-    if (user == null || !user.isAdmin) return;
-    try {
-      final count = await NotificationApiService.unreadCount();
-      if (mounted) setState(() => _unreadCount = count);
-    } catch (_) {}
-  }
 
   // The first four entries are always visible and drive the bottom
   // NavigationBar (Dashboard, Reports, Profile, Settings), matching their
@@ -123,12 +111,10 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
     void selectFromDrawer(int i) {
       select(i);
       Navigator.pop(context);
-      _refreshUnreadCount();
     }
 
     Widget navTile(int i) {
       final selected = _index == i;
-      final isNotifications = visibleItems[i].labelKey == 'notifications';
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Material(
@@ -160,18 +146,7 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
                       ),
                     ),
                   ),
-                  if (isNotifications && _unreadCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        _unreadCount > 99 ? '99+' : '$_unreadCount',
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                  
                 ],
               ),
             ),
@@ -280,9 +255,7 @@ class _AdminManagerShellState extends ConsumerState<AdminManagerShell> {
 
     return Scaffold(
       appBar: _index == 0 ? null : AppBar(title: Text(t.t(visibleItems[_index].labelKey))),
-      onDrawerChanged: (isOpened) {
-        if (isOpened) _refreshUnreadCount();
-      },
+      
       drawer: Drawer(
         width: MediaQuery.of(context).size.width * 0.82,
         backgroundColor: Colors.transparent,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/app_notification_item.dart';
 import '../../../services/api_service.dart';
 import '../../../services/notification_api_service.dart';
@@ -101,13 +102,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(t.t('notifications')),
         actions: [
-          TextButton(
-            onPressed: _markAllRead,
-            child: const Text('Mark all read', style: TextStyle(color: Colors.white)),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'mark_all_read') _markAllRead();
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'mark_all_read',
+                child: Row(
+                  children: [
+                    const Icon(Icons.done_all, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(t.t('markAllRead'))),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -117,9 +133,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               onRefresh: _load,
               child: _items.isEmpty
                   ? ListView(
-                      children: const [
-                        SizedBox(height: 120),
-                        Center(child: Text('No notifications yet')),
+                      children: [
+                        const SizedBox(height: 120),
+                        Center(child: Text(t.t('noNotificationsYet'))),
                       ],
                     )
                   : ListView.separated(

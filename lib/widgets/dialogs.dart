@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 Future<bool> confirmDialog(BuildContext context, {required String title, required String message}) async {
+  final t = context.l10n;
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.t('cancel'))),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.t('confirm'))),
       ],
     ),
   );

@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../services/notification_api_service.dart';
 import '../../../services/report_service.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/dialogs.dart';
 import '../../admin/give_stock/give_stock_screen.dart';
+import '../../admin/notifications/notifications_screen.dart';
 import '../../admin/return_stock/return_stock_screen.dart';
 import '../../admin/cash_payment/cash_payment_screen.dart';
 import '../../admin/bills/bills_module_screen.dart';
@@ -32,17 +34,32 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   String _period = 'weekly';
   Map<String, dynamic>? _data;
   bool _loading = true;
+  int _unreadCount = 0;
 
   final _currency = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ', decimalDigits: 0);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshUnreadCount());
     _load();
+  }
+
+  
+  /// Admin-only endpoint - silently no-ops (leaves the badge at 0) for
+  /// managers/retailers, who never see the Notifications drawer item anyway.
+  Future<void> _refreshUnreadCount() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || !user.isAdmin) return;
+    try {
+      final count = await NotificationApiService.unreadCount();
+      if (mounted) setState(() => _unreadCount = count);
+    } catch (_) {}
   }
 
   Future<void> _load() async {
     setState(() => _loading = true);
+    _refreshUnreadCount();
     try {
       _data = await ReportService.dashboard(_period);
     } on ApiException catch (e) {
@@ -127,6 +144,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // ---------------------------------------------------------------------
   Widget _header(BuildContext context, AppLocalizations t, String userName) {
     final scheme = Theme.of(context).colorScheme;
+    final authUser = ref.watch(authProvider).user;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,19 +160,43 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
             ),
             const Spacer(),
+            if(authUser != null && authUser.isAdmin)
             InkWell(
               borderRadius: BorderRadius.circular(24),
-              onTap: () => showSnack(context, t.t('featureComingSoon')),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(color: scheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
-                  ],
-                ),
-                child: const Icon(Icons.notifications_none_rounded, size: 22),
+              onTap: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+                _refreshUnreadCount();
+              },
+              child: Stack(
+                children: [
+                 
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: scheme.shadow.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 3)),
+                      ],
+                    ),
+                    child: const Icon(Icons.notifications_none_rounded, size: 22),
+                  ),
+                   if(_unreadCount > 0)
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          _unreadCount > 99 ? '99+' : '$_unreadCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ),
+                ],
               ),
             ),
           ],

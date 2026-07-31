@@ -9,6 +9,7 @@ import 'package:printing/printing.dart';
 import '../l10n/app_localizations.dart';
 import '../models/bill.dart';
 import '../models/company.dart';
+import '../models/receipt_label.dart';
 import '../services/api_service.dart';
 import '../services/bill_service.dart';
 import '../services/bluetooth_printer_service.dart';
@@ -59,7 +60,23 @@ Future<Bill?> showBillReceiptDialog(
               current = await BillService.settle(current.id!, current.grandTotal);
               setDialogState(() {});
             }
-            final printed = await container.read(printerConnectionProvider.notifier).printBill(current, company);
+            // Thermal printers can't render Tamil glyphs — always use English labels here,
+            // regardless of the app's current locale. Tamil still shows on-screen/PDF.
+            const labels = ReceiptLabels(
+              customer: 'Customer',
+              date: 'Date',
+              billNo: 'Bill No',
+              retailer: 'Retailer',
+              item: 'ITEM', given: 'G', returned: 'R', sold: 'S', rate: 'RATE', amount: 'AMT',
+              subtotal: 'Subtotal',
+              commission: 'Commission',
+              finalTotal: 'Final Total',
+              cashPaid: 'Cash Paid',
+              grandTotalBillAmount: 'GRAND TOTAL (BILL AMOUNT)',
+              balanceDue: 'Balance Due',
+              settled: 'Settled',
+            );
+            final printed = await container.read(printerConnectionProvider.notifier).printBill(current, company, labels);
             if (!printed) {
               setDialogState(() => busy = false);
               if (ctx.mounted) showSnack(ctx, t.t('printFailed'), isError: true);
@@ -70,6 +87,7 @@ Future<Bill?> showBillReceiptDialog(
             setDialogState(() => busy = false);
             if (ctx.mounted) showSnack(ctx, e.message, isError: true);
           } catch (_) {
+            print("Error printing receipt: $_");
             setDialogState(() => busy = false);
           }
         }

@@ -14,6 +14,7 @@ import 'providers/theme_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/common/dashboard/home_shell.dart';
 import 'services/push_notification_service.dart';
+import 'package:aj_project/config/permission_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -97,13 +98,28 @@ class AjApp extends ConsumerWidget {
   }
 }
 
-class _RootRouter extends ConsumerWidget {
+class _RootRouter extends ConsumerStatefulWidget {
   const _RootRouter();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.watch(authProvider);
+  ConsumerState<_RootRouter> createState() => _RootRouterState();
+}
 
+class _RootRouterState extends ConsumerState<_RootRouter> {
+  @override
+  void initState() {
+    super.initState();
+    requestBluetoothPermission().then((granted) {
+      if (!granted) {
+        print('Bluetooth permission not granted');
+      }
+    });
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = ref.watch(authProvider);
     if (auth.loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
